@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Brain | PPT Auto-Builder</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>Sales Brain</h1>
+      <p>AI-Powered Presentation Builder</p>
+    </header>
+
+    <main>
+      <section class="glass-panel" id="magic-section">
+        <h2>Magic Auto-Fill ✨</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Paste an unstructured strategy document, briefing, or article below. We'll automatically extract the fields for you.</p>
+        <div class="form-group">
+          <textarea id="rawTextInput" rows="6" placeholder="Paste your text here..."></textarea>
+        </div>
+        <button type="button" class="submit-btn" id="extractBtn" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+          <span class="btn-text">Auto-Extract Details</span>
+          <div class="spinner" id="extractSpinner"></div>
+        </button>
+        <p id="extractMsg" class="status-message"></p>
+      </section>
+
+      <form id="deckForm">
+        <section class="glass-panel">
+          <h2>Client Context</h2>
+          <div class="form-group">
+            <label for="clientName">Client Name</label>
+            <input type="text" id="clientName" required placeholder="e.g. Acme Corp">
+          </div>
+          <div class="form-group">
+            <label for="clientIndustry">Industry</label>
+            <input type="text" id="clientIndustry" required placeholder="e.g. Fintech">
+          </div>
+          <div class="form-group">
+            <label for="painPoints">Pain Points (comma separated)</label>
+            <input type="text" id="painPoints" required placeholder="e.g. manual reconciliation, slow onboarding">
+          </div>
+          <div class="form-group row">
+            <div class="col">
+              <label for="clientSize">Size (Employees)</label>
+              <input type="number" id="clientSize" placeholder="500">
+            </div>
+            <div class="col">
+              <label for="budgetRange">Budget Range</label>
+              <input type="text" id="budgetRange" placeholder="e.g. 50k-200k">
+            </div>
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <h2>Our Company</h2>
+          <div class="form-group">
+            <label for="products">Products (comma separated)</label>
+            <input type="text" id="products" required placeholder="e.g. AutoReconcile Pro, Sales Brain CRM">
+          </div>
+          <div class="form-group">
+            <label for="differentiators">Differentiators (comma separated)</label>
+            <input type="text" id="differentiators" required placeholder="e.g. 5-minute setup, SOC2 certified">
+          </div>
+          <div class="form-group">
+            <label for="caseStudyTitle">Case Study Title</label>
+            <input type="text" id="caseStudyTitle" placeholder="e.g. Reduced reconciliation time by 80% for BankX">
+          </div>
+          <div class="form-group">
+            <label for="caseStudyOutcome">Case Study Outcome</label>
+            <input type="text" id="caseStudyOutcome" placeholder="e.g. Saved 40 hrs/week">
+          </div>
+          <div class="form-group">
+            <label for="tagline">Company Tagline</label>
+            <input type="text" id="tagline" placeholder="Revenue intelligence, automated">
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <h2>Strategy</h2>
+          <div class="form-group row">
+            <div class="col">
+              <label for="alignmentScore">Alignment Score (0-100)</label>
+              <input type="number" id="alignmentScore" min="0" max="100" required placeholder="91">
+            </div>
+            <div class="col">
+              <label for="deckGoal">Deck Goal</label>
+              <select id="deckGoal" required>
+                <option value="discovery_call">Discovery Call</option>
+                <option value="follow_up">Follow Up</option>
+                <option value="proposal">Proposal</option>
+                <option value="demo">Demo</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="recommendedAngle">Recommended Angle</label>
+            <input type="text" id="recommendedAngle" required placeholder="e.g. Eliminate manual reconciliation overhead">
+          </div>
+        </section>
+
+        <button type="submit" class="submit-btn" id="generateBtn">
+          <span class="btn-text">Generate Presentation</span>
+          <div class="spinner" id="spinner"></div>
+        </button>
+        <p id="statusMsg" class="status-message"></p>
+      </form>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
