@@ -130,8 +130,8 @@ app.post('/build-deck', async (req, res) => {
       // 2f: Re-generate failing slides (content + optional layout switch)
       console.log(`[${jobId}] Re-generating ${allFailingIndices.size} failing slides...`);
 
-      for (const idx of allFailingIndices) {
-        if (idx < 0 || idx >= deckSpec.slides.length) continue;
+      const regenPromises = Array.from(allFailingIndices).map(async (idx) => {
+        if (idx < 0 || idx >= deckSpec.slides.length) return;
 
         const slidePlan = deckSpec.slides[idx];
         const feedbackParts = [];
@@ -185,7 +185,9 @@ app.post('/build-deck', async (req, res) => {
         } catch (regenErr) {
           console.error(`[${jobId}]   → Slide ${idx + 1} regen failed:`, regenErr.message);
         }
-      }
+      });
+
+      await Promise.all(regenPromises);
 
       // Clean up the iteration file (we'll build a new one)
       fs.unlink(iterPath, () => { });

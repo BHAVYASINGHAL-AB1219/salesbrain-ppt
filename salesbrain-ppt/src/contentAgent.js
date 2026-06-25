@@ -35,7 +35,10 @@ Rules:
 - bullets: max 4-6 items depending on slide type
   - For services_grid/tech_stack: up to 9-12 items, format "Title: description"
   - For client_wall: up to 15-20 client/company names as simple strings
-  - For engagement_models: 3 items, format "Model Name || bullet1 || bullet2 || bullet3"
+  - For engagement_models: exactly 3 bullets, one per column, format "Model Name: point1 | point2 | point3"
+  Example: "Fixed Scope Projects: Predictable cost and timeline | Defined deliverables upfront | Best for clear-scope work"
+  Example: "Managed Services: 24/7 monitoring and support | Proactive issue resolution | Scales with your demand"
+  Example: "Staff Augmentation: On-demand specialist talent | No recruitment overhead | Ramp up or down instantly"
   - For regular slides: max 4 items, each max 12 words
 - speaker_notes: 2-3 sentences for the presenter, conversational
 - stat_callout: only if there's a real number in the payload (null otherwise)

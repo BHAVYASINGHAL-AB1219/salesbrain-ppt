@@ -45,7 +45,11 @@ const FaCogs = createIcon('M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.
 const FaGlobe = createIcon('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.18 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.78 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c1.03-1.65 2.56-2.93 4.33-3.56-.6 1.11-1.06 2.31-1.38 3.56zM12 19.96c-.83-1.18-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.78-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-1.03 1.65-2.56 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z');
 const FaLaptopCode = createIcon('M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z');
 const FaDatabase = createIcon('M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4zm0 6c-3.14 0-5.83-1.07-7-2.61V9c0 2.21 3.58 4 8 4s8-1.79 8-4V6.39C17.83 7.93 15.14 9 12 9zm0 5c-3.14 0-5.83-1.07-7-2.61V14c0 2.21 3.58 4 8 4s8-1.79 8-4v-2.61C17.83 12.93 15.14 14 12 14zm0 5c-3.14 0-5.83-1.07-7-2.61V19c0 2.21 3.58 4 8 4s8-1.79 8-4v-2.61C17.83 17.93 15.14 19 12 19z');
-
+// Add these to your existing icon block
+const FaIndustry = createIcon('M5 3H3v18h18V3H5zm10 14H7v-2h8v2zm2-4H7v-2h10v2zm0-4H7V7h10v2z');
+const FaMapMarker = createIcon('M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z');
+const FaBuilding = createIcon('M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zm-6 4H9v-2h2v2zm0-4H9V9h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2z');
+const FaBriefcase = createIcon('M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.98 16.04 1 13.64 1h-3.28C7.96 1 6 2.98 6 4.64c0 .48.11.92.18 1.36H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6.36-3c.75 0 1.36.61 1.36 1.36 0 .48-.11.93-.18 1.64H9.18c-.07-.71-.18-1.16-.18-1.64C9 3.61 9.61 3 10.36 3h3.28zM20 19H4V8h16v11z');
 // ─── Skill: "Pick a bold, content-informed color palette" ────────────────────
 const COLOR_THEMES = {
   midnight_executive: {
@@ -126,6 +130,19 @@ const COLOR_THEMES = {
     body_dark: 'C8DCC8',
     chart: ['50808E', '84B59F', '69A297', 'A8D5BA'],
   },
+  golden_navy: {
+    dark_bg: '0A1F44',   // deep navy — cover bg, dark masters
+    light_bg: 'F0F7FF',   // ice blue-white — body slide bg
+    card_bg: 'E8F2FF',   // slightly deeper — card surfaces
+    primary: '0078D4',   // electric blue — buttons, borders, headings on light
+    secondary: '00B4D8',   // cyan — eyebrows, subtitles, taglines on dark slides
+    accent: 'FFC200',   // gold — stat_callout numbers, cover stats strip ONLY
+    title_dark: 'FFFFFF',   // white — h1 on dark bg slides
+    title_light: '0A1F44',   // navy — h1 on light bg slides
+    body_light: '5A6A85',   // muted slate — bullet text on light slides
+    body_dark: 'B0D4F8',   // pale blue — bullet text on dark slides
+    chart: ['0078D4', '00B4D8', 'FFC200', '5A6A85'],  // blue, cyan, gold, slate
+  },
 };
 
 // ─── Skill: Icon helper — "size 256 or higher for crisp icons" ───────────────
@@ -173,24 +190,24 @@ function defineSlidesMasters(pres, theme, brand) {
 
   // Subtle footer divider line
   const divider = {
-    line: { x: 0.4, y: 4.88, w: 9.2, h: 0, line: { color: theme.secondary, width: 0.5 } }
+    line: { x: 0.4, y: 7.1, w: 12.5, h: 0, line: { color: theme.secondary, width: 0.5 } }
   };
   lightObjects.push(divider);
   darkObjects.push(divider);
 
   if (logoPath) {
     lightObjects.push({
-      image: { path: logoPath, x: 0.5, y: 4.95, w: 1.5, h: 0.3, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
+      image: { path: logoPath, x: 0.5, y: 7.18, w: 1.5, h: 0.25, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
     });
     darkObjects.push({
-      image: { path: logoPath, x: 0.5, y: 4.95, w: 1.5, h: 0.3, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
+      image: { path: logoPath, x: 0.5, y: 7.18, w: 1.5, h: 0.25, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
     });
   } else {
     lightObjects.push({
-      text: { text: brandName, options: { x: 0.5, y: 4.95, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.secondary, align: 'left' } }
+      text: { text: brandName, options: { x: 0.5, y: 7.18, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.secondary, align: 'left' } }
     });
     darkObjects.push({
-      text: { text: brandName, options: { x: 0.5, y: 4.95, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.body_dark, align: 'left' } }
+      text: { text: brandName, options: { x: 0.5, y: 7.18, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.body_dark, align: 'left' } }
     });
   }
 
@@ -211,7 +228,8 @@ function defineSlidesMasters(pres, theme, brand) {
 function addSlideNum(slide, spec) {
   const color = spec.is_dark_slide ? spec.theme.body_dark : spec.theme.secondary;
   slide.addText(`${spec.slide_number} / ${spec.total_slides}`, {
-    x: 9.2, y: 4.95, w: 0.6, h: 0.2,
+    x: 12.3, y: 7.2, w: 0.8, h: 0.2,
+    //  ^^^^ pushed right for 13.33" wide    ^^^^ pushed to actual bottom
     fontSize: 9, fontFace: 'Calibri', color, align: 'right'
   });
 }
@@ -348,7 +366,8 @@ async function renderSectionHeader(slide, spec, pres) {
   slide.addText(`0${spec.slide_number}`, {
     x: 5.5, y: 0.1, w: 4.3, h: 4.2,
     fontSize: 180, fontFace: 'Cambria', bold: true,
-    color: t.secondary,
+    color: t.primary,
+    transparency: 85,
     align: 'right', valign: 'middle', margin: 0
   });
 
@@ -359,8 +378,18 @@ async function renderSectionHeader(slide, spec, pres) {
     line: { color: t.accent, width: 0 }
   });
 
+  slide.addText(
+    (EYEBROW_MAP[spec.slide_type] || 'SECTION').toUpperCase(),
+    {
+      x: 0.9, y: 1.85, w: 8, h: 0.35,
+      fontSize: 10, bold: true, charSpacing: 4,
+      color: t.secondary,
+      fontFace: 'Calibri', align: 'left', margin: 0
+    }
+  );
+
   slide.addText(spec.title, {
-    x: 0.9, y: 1.6, w: 7, h: 1.4,
+    x: 0.9, y: 2.25, w: 7, h: 1.4,
     fontSize: 36, fontFace: 'Cambria', bold: true,
     color: t.title_dark, align: 'left', valign: 'middle', margin: 0
   });
@@ -1083,22 +1112,32 @@ async function renderThreeColumn(slide, spec, pres) {
   let columns = [];
 
   // Check if bullets contain column headers (format: "Header || bullet1 || bullet2")
-  if (allBullets.length >= 3 && allBullets.some(b => b.includes('||'))) {
-    columns = allBullets.map(b => {
+  if (allBullets.some(b => b.includes('||'))) {
+    // Legacy format: "Header || point1 || point2"
+    columns = allBullets.slice(0, 3).map(b => {
       const parts = b.split('||').map(p => p.trim());
       return { header: parts[0], items: parts.slice(1) };
     });
+  } else if (allBullets.some(b => b.includes(':'))) {
+    // New format: "Header: point1 | point2 | point3"
+    columns = allBullets.slice(0, 3).map(b => {
+      const colonIdx = b.indexOf(':');
+      const header = b.slice(0, colonIdx).trim();
+      const items = b.slice(colonIdx + 1).split('|').map(s => s.trim()).filter(Boolean);
+      return { header, items };
+    });
   } else {
-    // Split evenly into 3 groups
-    const third = Math.ceil(allBullets.length / 3);
-    const g1 = allBullets.slice(0, third);
-    const g2 = allBullets.slice(third, third * 2);
-    const g3 = allBullets.slice(third * 2);
-    columns = [
-      { header: 'Option A', items: g1 },
-      { header: 'Option B', items: g2 },
-      { header: 'Option C', items: g3 },
-    ];
+    // Last resort fallback — at least use actual bullet text as headers
+    // instead of "Option A / B / C"
+    columns = allBullets.slice(0, 3).map((b, i) => ({
+      header: b,
+      items: allBullets.slice(3).filter((_, idx) => idx % 3 === i)
+    }));
+  }
+
+  // Safety net — always pad to 3 columns so slide never breaks
+  while (columns.length < 3) {
+    columns.push({ header: `Model ${columns.length + 1}`, items: ['Details coming soon'] });
   }
 
   const startY = spec.subtitle ? 1.5 : 1.3;
@@ -1106,7 +1145,12 @@ async function renderThreeColumn(slide, spec, pres) {
   const gap = 0.22;
   const headerH = 0.5;
   const bodyH = 3.1;
-  const colors = [t.secondary, t.primary, t.accent];
+  const isLightAccent = parseInt(t.accent, 16) > 0xAAAAAA;
+  const colors = [
+    t.secondary,
+    t.primary,
+    isLightAccent ? t.dark_bg : t.accent
+  ];
 
   for (let c = 0; c < Math.min(columns.length, 3); c++) {
     const x = 0.5 + c * (colW + gap);
@@ -1245,7 +1289,20 @@ async function build(deckSpec, outputPath) {
   pres.title = deckSpec.deck_title || 'Sales Presentation';
   pres.author = 'Sales Brain';
 
-  const theme = COLOR_THEMES[deckSpec.color_theme] || COLOR_THEMES.midnight_executive;
+  // Add this BEFORE the theme lookup line in build()
+  console.log('[raw deckSpec]', JSON.stringify({
+    theme_choice: deckSpec.theme_choice,
+    color_theme: deckSpec.color_theme,
+    deck_title: deckSpec.deck_title
+  }));
+
+  const theme = COLOR_THEMES[deckSpec.theme_choice]
+    || COLOR_THEMES[deckSpec.color_theme]
+    || COLOR_THEMES.midnight_executive;
+
+  console.log('[theme selected]', deckSpec.theme_choice, '→',
+    COLOR_THEMES[deckSpec.theme_choice] ? 'matched ✅' : 'FALLBACK midnight_executive ⚠️'
+  );
 
   // Read brand.json
   let brand = {};

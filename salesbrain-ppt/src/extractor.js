@@ -10,7 +10,7 @@ const CONTENT_MODEL = process.env.CONTENT_MODEL || 'kimi-k2p6';
 
 async function extract(text) {
   const systemPrompt = `You are an expert data extractor. Given an unstructured text document (e.g. an alignment strategy, article, or briefing), extract the relevant information into a specific JSON structure.
-Return ONLY valid JSON. If information is missing, infer it reasonably or leave it null/empty.
+CRITICAL: You must output ONLY the raw JSON object. Do not include ANY conversational text, reasoning, or markdown formatting. Start your response immediately with the JSON.
 
 Schema:
 {
@@ -32,10 +32,13 @@ Schema:
   console.log(`[Extractor] Using model: ${CONTENT_MODEL}`);
   const response = await claude.messages.create({
     model: CONTENT_MODEL,
-    max_tokens: 4000,
+    max_tokens: 8192,
     system: systemPrompt,
     messages: [
-      { role: 'user', content: `Text to extract:\n\n${text}` }
+      {
+        role: 'user',
+        content: `Text to extract:\n\n${text}\n\nCRITICAL INSTRUCTION: You must output ONLY the raw JSON object. Do not include ANY conversational text, reasoning, or markdown formatting. Start your response immediately with the JSON { character.`
+      }
     ]
   });
 
