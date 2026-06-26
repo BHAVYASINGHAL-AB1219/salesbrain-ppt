@@ -11,6 +11,19 @@
 // ─── Color themes — single source of truth ───────────────────────────────────
 // These MUST match assembler_v2.js COLOR_THEMES exactly.
 const COLOR_THEMES = {
+  quarks_brand: {
+    dark_bg: '0D1B2A',   // Deep Navy — spec token --navy
+    light_bg: 'F0F4F8',   // Ice White — spec token --ice
+    card_bg: 'E2E8F0',   // Pearl Gray — spec token --pearl (was E8EEF4)
+    primary: '059669',   // Muted Emerald — spec token --emerald
+    secondary: '047857',   // Deeper Emerald — eyebrows, dividers (was same as primary)
+    accent: 'E8B84B',   // Amber Gold — spec token --amber, stats ONLY
+    title_dark: 'F8F9FA',   // Off-White — spec token --text-light
+    title_light: '1A1A2E',   // Slate Black — spec token --text-dark
+    body_light: '64748B',   // Cool Gray — spec token --muted (was 374151)
+    body_dark: 'C8D8E8',   // Pale blue-grey on dark slides
+    chart: ['059669', 'E8B84B', '0D1B2A', '6EE7B7'],
+  },
   midnight_executive: {
     dark_bg: '1E2761',
     light_bg: 'EEF2FF',

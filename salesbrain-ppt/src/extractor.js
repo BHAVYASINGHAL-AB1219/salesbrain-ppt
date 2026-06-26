@@ -10,7 +10,7 @@ const CONTENT_MODEL = process.env.CONTENT_MODEL || 'kimi-k2p6';
 
 async function extract(text) {
   const systemPrompt = `You are an expert data extractor. Given an unstructured text document (e.g. an alignment strategy, article, or briefing), extract the relevant information into a specific JSON structure.
-CRITICAL: You must output ONLY the raw JSON object. Do not include ANY conversational text, reasoning, or markdown formatting. Start your response immediately with the JSON.
+CRITICAL: You MUST wrap the JSON in \`\`\`json and \`\`\` fences. Do NOT output any chain of thought, reasoning, or explanation. Start your response immediately with \`\`\`json.
 
 Schema:
 {
@@ -37,7 +37,7 @@ Schema:
     messages: [
       {
         role: 'user',
-        content: `Text to extract:\n\n${text}\n\nCRITICAL INSTRUCTION: You must output ONLY the raw JSON object. Do not include ANY conversational text, reasoning, or markdown formatting. Start your response immediately with the JSON { character.`
+        content: `Text to extract:\n\n${text}\n\nCRITICAL INSTRUCTION: You MUST wrap the JSON in \`\`\`json and \`\`\` fences. Do NOT output any chain of thought, reasoning, or explanation. Start your response immediately with \`\`\`json.`
       }
     ]
   });

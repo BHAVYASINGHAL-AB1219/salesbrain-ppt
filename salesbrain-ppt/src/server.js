@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -130,7 +130,7 @@ app.post('/build-deck', async (req, res) => {
       // 2f: Re-generate failing slides (content + optional layout switch)
       console.log(`[${jobId}] Re-generating ${allFailingIndices.size} failing slides...`);
 
-      const regenPromises = Array.from(allFailingIndices).map(async (idx) => {
+      const regenPromiseFn = async (idx) => {
         if (idx < 0 || idx >= deckSpec.slides.length) return;
 
         const slidePlan = deckSpec.slides[idx];
@@ -185,9 +185,25 @@ app.post('/build-deck', async (req, res) => {
         } catch (regenErr) {
           console.error(`[${jobId}]   → Slide ${idx + 1} regen failed:`, regenErr.message);
         }
-      });
+      };
 
-      await Promise.all(regenPromises);
+      const delayMs = parseInt(process.env.RATE_LIMIT_DELAY_MS || '0', 10);
+      const indicesToRegen = Array.from(allFailingIndices);
+      
+      if (delayMs > 0) {
+        // Sequential with delay to avoid rate limits
+        for (let i = 0; i < indicesToRegen.length; i++) {
+          const idx = indicesToRegen[i];
+          await regenPromiseFn(idx);
+          if (i < indicesToRegen.length - 1) {
+            console.log(`[${jobId}] Sleeping for ${delayMs}ms between regenerations...`);
+            await new Promise(r => setTimeout(r, delayMs));
+          }
+        }
+      } else {
+        // Parallel as before
+        await Promise.all(indicesToRegen.map(idx => regenPromiseFn(idx)));
+      }
 
       // Clean up the iteration file (we'll build a new one)
       fs.unlink(iterPath, () => { });
@@ -195,21 +211,34 @@ app.post('/build-deck', async (req, res) => {
 
     console.log(`[${jobId}] Done → ${finalPath} (review ${reviewPassed ? 'PASSED' : 'used best effort'})`);
 
-    res.download(finalPath, `${payload.client?.name || 'deck'}-presentation.pptx`, (err) => {
-      if (err) console.error(`[${jobId}] Download error:`, err);
-      // Clean up all iteration files after download
-      setTimeout(() => {
-        for (let i = 0; i <= MAX_REVIEW_ITERATIONS; i++) {
-          const p = path.join(OUTPUT_DIR, `deck-${jobId}-iter${i}.pptx`);
-          fs.unlink(p, () => { });
-        }
-      }, 60000);
-    });
+    const filename = path.basename(finalPath);
+    res.json({ success: true, downloadUrl: `/download/${filename}` });
+
+    // Clean up all iteration files EXCEPT the final one immediately
+    for (let i = 0; i <= MAX_REVIEW_ITERATIONS; i++) {
+      const p = path.join(OUTPUT_DIR, `deck-${jobId}-iter${i}.pptx`);
+      if (p !== finalPath) {
+        fs.unlink(p, () => { });
+      }
+    }
+
+    // Clean up the final file after 5 minutes
+    setTimeout(() => {
+      fs.unlink(finalPath, () => { });
+    }, 5 * 60 * 1000);
 
   } catch (err) {
     console.error(`[${jobId}] Error:`, err);
     res.status(500).json({ error: err.message, jobId });
   }
+});
+
+app.get('/download/:filename', (req, res) => {
+  const file = path.join(OUTPUT_DIR, req.params.filename);
+  if (!fs.existsSync(file)) {
+    return res.status(404).send('File not found or expired.');
+  }
+  res.download(file, req.params.filename);
 });
 
 app.post('/extract-payload', async (req, res) => {

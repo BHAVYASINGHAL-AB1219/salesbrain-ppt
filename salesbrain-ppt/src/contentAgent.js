@@ -22,14 +22,18 @@ async function generate(slidePlan, payload, slideIndex, reviewFeedback = null) {
     model: CONTENT_MODEL,
     max_tokens: 8192,
     system: `You write compelling sales presentation slide content. 
-Return ONLY valid JSON. No markdown, no explanation.
 
 IMPORTANT JSON RULES:
+- MUST wrap the JSON in \`\`\`json and \`\`\` fences.
+- CRITICAL: DO NOT output any chain of thought, reasoning, or explanation. Start your response IMMEDIATELY with \`\`\`json.
 - Escape all double quotes inside string values using \\"
 - Do NOT use unescaped newlines (\\n) inside string values. Keep text on a single line.
 - Ensure the JSON is strictly valid.
 
 Rules:
+- For services_grid bullets, append the signal in brackets after each item:
+  "Agentic AI in Service Operations: Autonomous ticket resolution [Hot in 2026]"
+  This shows the client Quarks is tracking current signals, not selling old solutions.
 - title: max 8 words, punchy and specific
 - subtitle: optional, 1 sentence max for context
 - bullets: max 4-6 items depending on slide type

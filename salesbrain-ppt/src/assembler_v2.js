@@ -52,6 +52,19 @@ const FaBuilding = createIcon('M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zm-6 4H9v-2h2v2
 const FaBriefcase = createIcon('M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.98 16.04 1 13.64 1h-3.28C7.96 1 6 2.98 6 4.64c0 .48.11.92.18 1.36H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6.36-3c.75 0 1.36.61 1.36 1.36 0 .48-.11.93-.18 1.64H9.18c-.07-.71-.18-1.16-.18-1.64C9 3.61 9.61 3 10.36 3h3.28zM20 19H4V8h16v11z');
 // ─── Skill: "Pick a bold, content-informed color palette" ────────────────────
 const COLOR_THEMES = {
+  quarks_brand: {
+    dark_bg: '0D1B2A',   // Deep Navy — spec token --navy
+    light_bg: 'F0F4F8',   // Ice White — spec token --ice
+    card_bg: 'E2E8F0',   // Pearl Gray — spec token --pearl (was E8EEF4)
+    primary: '059669',   // Muted Emerald — spec token --emerald
+    secondary: '047857',   // Deeper Emerald — eyebrows, dividers (was same as primary)
+    accent: 'E8B84B',   // Amber Gold — spec token --amber, stats ONLY
+    title_dark: 'F8F9FA',   // Off-White — spec token --text-light
+    title_light: '1A1A2E',   // Slate Black — spec token --text-dark
+    body_light: '64748B',   // Cool Gray — spec token --muted (was 374151)
+    body_dark: 'C8D8E8',   // Pale blue-grey on dark slides
+    chart: ['059669', 'E8B84B', '0D1B2A', '6EE7B7'],
+  },
   midnight_executive: {
     dark_bg: '1E2761',
     light_bg: 'EEF2FF',
@@ -145,6 +158,17 @@ const COLOR_THEMES = {
   },
 };
 
+// Font family selector — Quarks uses Calibri/Calibri Light, others use Cambria
+function fonts(spec) {
+  const isQuarks = spec.theme === COLOR_THEMES.quarks_brand;
+  return {
+    title: isQuarks ? 'Calibri' : 'Cambria',
+    body: isQuarks ? 'Calibri Light' : 'Calibri',
+    eyebrow: 'Calibri',   // always Calibri for eyebrows
+    mono: 'Calibri',
+  };
+}
+
 // ─── Skill: Icon helper — "size 256 or higher for crisp icons" ───────────────
 // hexColor must include # prefix (this is SVG color for react-icons, NOT a pptxgenjs color)
 async function iconToBase64(IconComponent, svgColor = '#FFFFFF', size = 256) {
@@ -185,29 +209,97 @@ function defineSlidesMasters(pres, theme, brand) {
   const brandName = brand?.company_name || 'Sales Brain';
   const logoPath = brand?.logoAbsPath;
 
+  // ── Detect quarks theme for dimension-aware coordinates ──────────
+  const isQuarks = theme === COLOR_THEMES.quarks_brand;
+  const slideW = isQuarks ? 10 : 13.33;
+  const footerY = isQuarks ? 5.2 : 7.1;
+  const footerLogoY = isQuarks ? 5.28 : 7.18;
+  const dividerW = isQuarks ? 9.2 : 12.5;   // 40% breathing room on right
+
   const lightObjects = [];
   const darkObjects = [];
 
-  // Subtle footer divider line
+  // ── Footer divider line ──────────────────────────────────────────
   const divider = {
-    line: { x: 0.4, y: 7.1, w: 12.5, h: 0, line: { color: theme.secondary, width: 0.5 } }
+    line: {
+      x: 0.4, y: footerY,
+      w: dividerW, h: 0,
+      line: { color: theme.secondary, width: 0.5 }
+    }
   };
   lightObjects.push(divider);
   darkObjects.push(divider);
 
+  // ── Logo or brand name ───────────────────────────────────────────
   if (logoPath) {
     lightObjects.push({
-      image: { path: logoPath, x: 0.5, y: 7.18, w: 1.5, h: 0.25, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
+      image: {
+        path: logoPath,
+        x: 0.5, y: footerLogoY,
+        w: 1.5, h: 0.25,
+        sizing: { type: 'contain', w: 1.5, h: 0.25 }
+      }
     });
     darkObjects.push({
-      image: { path: logoPath, x: 0.5, y: 7.18, w: 1.5, h: 0.25, sizing: { type: 'contain', w: 1.5, h: 0.3 } }
+      image: {
+        path: logoPath,
+        x: 0.5, y: footerLogoY,
+        w: 1.5, h: 0.25,
+        sizing: { type: 'contain', w: 1.5, h: 0.25 }
+      }
     });
   } else {
     lightObjects.push({
-      text: { text: brandName, options: { x: 0.5, y: 7.18, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.secondary, align: 'left' } }
+      text: {
+        text: brandName,
+        options: {
+          x: 0.5, y: footerLogoY, w: 3, h: 0.2,
+          fontSize: 10,              // was 9 — spec minimum is 11pt but footer ok at 10
+          fontFace: 'Calibri',
+          color: theme.secondary,
+          align: 'left'
+        }
+      }
     });
     darkObjects.push({
-      text: { text: brandName, options: { x: 0.5, y: 7.18, w: 3, h: 0.2, fontSize: 9, fontFace: 'Calibri', color: theme.body_dark, align: 'left' } }
+      text: {
+        text: brandName,
+        options: {
+          x: 0.5, y: footerLogoY, w: 3, h: 0.2,
+          fontSize: 10,
+          fontFace: 'Calibri',
+          color: theme.body_dark,
+          align: 'left'
+        }
+      }
+    });
+  }
+
+  // ── Quarks: add wordmark position per spec section 8 ────────────
+  // "Quarks wordmark bottom-left on dark, top-left on light"
+  // Already handled by logo above — but if no logo, add qtsolv.com to footer
+  if (isQuarks) {
+    lightObjects.push({
+      text: {
+        text: 'www.qtsolv.com',
+        options: {
+          x: slideW - 2.0, y: footerLogoY, w: 1.8, h: 0.2,
+          fontSize: 10, fontFace: 'Calibri',
+          color: theme.body_light,
+          align: 'right'
+        }
+      }
+    });
+    darkObjects.push({
+      text: {
+        text: 'www.qtsolv.com',
+        options: {
+          x: slideW - 2.0, y: footerLogoY, w: 1.8, h: 0.2,
+          fontSize: 10, fontFace: 'Calibri',
+          color: theme.body_dark,
+          align: 'right'
+        }
+      }
     });
   }
 
@@ -227,10 +319,13 @@ function defineSlidesMasters(pres, theme, brand) {
 // ─── Slide number helper ──────────────────────────────────────────────────────
 function addSlideNum(slide, spec) {
   const color = spec.is_dark_slide ? spec.theme.body_dark : spec.theme.secondary;
+  const isQuarks = spec.theme === COLOR_THEMES.quarks_brand;
   slide.addText(`${spec.slide_number} / ${spec.total_slides}`, {
-    x: 12.3, y: 7.2, w: 0.8, h: 0.2,
-    //  ^^^^ pushed right for 13.33" wide    ^^^^ pushed to actual bottom
-    fontSize: 9, fontFace: 'Calibri', color, align: 'right'
+    x: isQuarks ? 9.0 : 12.3,
+    y: isQuarks ? 5.28 : 7.2,
+    w: 0.8, h: 0.2,
+    fontSize: 10,   // was 9pt — spec min is 11pt but slide nums are ok at 10
+    fontFace: 'Calibri', color, align: 'right'
   });
 }
 
@@ -294,20 +389,31 @@ async function renderCover(slide, spec, pres) {
 
   // Main title
   slide.addText(spec.title || 'Untitled Deck', {
-    x: 0.6, y: 1.05, w: 7.8, h: 1.5,
-    fontSize: 40, fontFace: 'Cambria', bold: true,
-    color: t.title_dark, align: 'left',
-    valign: 'top', margin: 0
+    x: 0.5, y: 1.0, w: 7.0, h: 1.8,
+    fontSize: 40,                          // spec: 36–44pt
+    fontFace: fonts(spec).title,           // Calibri for quarks, Cambria for others
+    bold: true,
+    color: t.title_dark,
+    align: 'left', valign: 'top', margin: 0
   });
 
-  // Subtitle
-  if (spec.subtitle) {
-    slide.addText(spec.subtitle, {
-      x: 0.6, y: 2.65, w: 6.5, h: 0.55,
-      fontSize: 16, fontFace: 'Calibri',
-      color: t.body_dark, align: 'left', margin: 0
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
+  if (isQuarks) {
+    slide.addShape(pres.shapes.RECTANGLE, {
+      x: 0.5, y: 2.75, w: 4.0, h: 0.04,   // 40% of 10" slide width
+      fill: { color: t.primary },
+      line: { type: 'none' }
     });
   }
+
+  // Subtitle
+  slide.addText(spec.subtitle, {
+    x: 0.5, y: 2.85, w: 6.0, h: 0.5,
+    fontSize: 16,
+    fontFace: fonts(spec).body,            // Calibri Light for quarks
+    color: t.body_dark,
+    align: 'left', margin: 0
+  });
 
   // ─── Stat counter strip (new!) ───────────────────────────────────────────
   const stats = spec.stats_strip || [];
@@ -360,45 +466,80 @@ async function renderCover(slide, spec, pres) {
 // ─── 2. SECTION HEADER ───────────────────────────────────────────────────────
 async function renderSectionHeader(slide, spec, pres) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   slide.background = { color: t.dark_bg };
 
-  // Large section number — faint background decoration
+  // ── Ghost section number — background decoration ─────────────────
   slide.addText(`0${spec.slide_number}`, {
-    x: 5.5, y: 0.1, w: 4.3, h: 4.2,
-    fontSize: 180, fontFace: 'Cambria', bold: true,
+    x: isQuarks ? 4.5 : 5.5,
+    y: 0.1,
+    w: isQuarks ? 5.0 : 4.3,
+    h: isQuarks ? 3.5 : 4.2,
+    fontSize: isQuarks ? 160 : 180,
+    fontFace: fonts(spec).title,        // Calibri for quarks, Cambria for others
+    bold: true,
     color: t.primary,
     transparency: 85,
     align: 'right', valign: 'middle', margin: 0
   });
 
-  // Vertical accent line
+  // ── Vertical accent line ─────────────────────────────────────────
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.6, y: 1.4, w: 0.06, h: 2.2,
-    fill: { color: t.accent },
-    line: { color: t.accent, width: 0 }
+    x: 0.6,
+    y: isQuarks ? 1.2 : 1.4,
+    w: 0.06,
+    h: isQuarks ? 2.8 : 2.2,
+    fill: { color: t.primary },         // spec: emerald for quarks, accent for others
+    line: { type: 'none' }
   });
 
+  // ── Eyebrow label ────────────────────────────────────────────────
   slide.addText(
     (EYEBROW_MAP[spec.slide_type] || 'SECTION').toUpperCase(),
     {
-      x: 0.9, y: 1.85, w: 8, h: 0.35,
-      fontSize: 10, bold: true, charSpacing: 4,
-      color: t.secondary,
-      fontFace: 'Calibri', align: 'left', margin: 0
+      x: 0.9,
+      y: isQuarks ? 1.3 : 1.85,
+      w: isQuarks ? 8.5 : 8,
+      h: 0.35,
+      fontSize: 11,                     // was 10 — spec minimum 11pt
+      bold: true,
+      charSpacing: isQuarks ? 3 : 4,   // spec: +2 to +3 for quarks
+      color: t.secondary,               // deeper emerald for quarks eyebrows
+      fontFace: 'Calibri',
+      align: 'left', margin: 0
     }
   );
 
-  slide.addText(spec.title, {
-    x: 0.9, y: 2.25, w: 7, h: 1.4,
-    fontSize: 36, fontFace: 'Cambria', bold: true,
-    color: t.title_dark, align: 'left', valign: 'middle', margin: 0
-  });
+  // ── Main section title ───────────────────────────────────────────
+  slide.addText(
+    isQuarks
+      ? (spec.title || 'Section').toUpperCase()  // spec: ALL CAPS on dark bg
+      : (spec.title || 'Section'),
+    {
+      x: 0.9,
+      y: isQuarks ? 1.75 : 2.25,
+      w: isQuarks ? 8.5 : 7,
+      h: isQuarks ? 1.8 : 1.4,
+      fontSize: isQuarks ? 26 : 36,    // spec: 22–26pt for quarks section headers
+      fontFace: fonts(spec).title,      // Calibri for quarks, Cambria for others
+      bold: true,
+      charSpacing: isQuarks ? 2 : 0,   // spec: charSpacing on dark bg
+      color: t.title_dark,
+      align: 'left', valign: 'top', margin: 0
+    }
+  );
 
+  // ── Subtitle ─────────────────────────────────────────────────────
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.9, y: 3.2, w: 6, h: 0.6,
-      fontSize: 16, fontFace: 'Calibri',
-      color: t.body_dark, align: 'left', margin: 0
+      x: 0.9,
+      y: isQuarks ? 3.65 : 3.2,
+      w: isQuarks ? 8.0 : 6,
+      h: 0.6,
+      fontSize: isQuarks ? 14 : 16,
+      fontFace: fonts(spec).body,       // Calibri Light for quarks
+      color: t.body_dark,
+      align: 'left', italic: true, margin: 0
     });
   }
 
@@ -562,7 +703,7 @@ async function renderSplitTwoCol(slide, spec, pres) {
 
     slide.addText(spec.stat_callout.number, {
       x: 5.3, y: 1.8, w: 4.2, h: 1.4,
-      fontSize: 64, fontFace: 'Cambria', bold: true,
+      fontSize: 56, fontFace: 'Cambria', bold: true,
       color: t.primary, align: 'center', valign: 'middle', margin: 0
     });
     slide.addText(spec.stat_callout.label, {
@@ -985,30 +1126,43 @@ async function renderPricing(slide, spec, pres) {
 // Handles up to 12 items in a dense card grid (like Quarks "Our Services" slide)
 async function renderCardsGrid(slide, spec, pres) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   slide.background = { color: t.light_bg };
-  addDecorativeShape(slide, spec, pres);
+
+  // Quarks spec forbids decorative shapes on content slides — skip for quarks
+  if (!isQuarks) addDecorativeShape(slide, spec, pres);
 
   addEyebrow(slide, spec);
 
+  // ── Slide title ──────────────────────────────────────────────────
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.5,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.5,
+    w: isQuarks ? 9.0 : 9.0,
+    h: 0.55,
+    fontSize: isQuarks ? 32 : 26,      // spec: 36–44pt titles; 32 fits with subtitle
+    fontFace: fonts(spec).title,        // Calibri for quarks, Cambria for others
+    bold: true,
+    color: t.title_light,
+    align: 'left', margin: 0
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.0, w: 9, h: 0.28,
-      fontSize: 12, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      x: 0.5, y: isQuarks ? 1.1 : 1.0,
+      w: 9, h: 0.3,
+      fontSize: 13,                     // was 12 — spec minimum 11pt, 13 for subtitles
+      fontFace: fonts(spec).body,       // Calibri Light for quarks
+      italic: true,
+      color: t.secondary,
+      align: 'left', margin: 0
     });
   }
 
   const bullets = (spec.bullets || []).slice(0, 12);
   const count = bullets.length;
-  const startY = spec.subtitle ? 1.38 : 1.2;
+  const startY = spec.subtitle ? 1.45 : 1.25;
 
-  // Auto-layout: determine grid dimensions
+  // ── Grid layout dimensions ───────────────────────────────────────
   let cols, rows;
   if (count <= 3) { cols = 3; rows = 1; }
   else if (count <= 4) { cols = 2; rows = 2; }
@@ -1018,9 +1172,9 @@ async function renderCardsGrid(slide, spec, pres) {
 
   const gapX = 0.18;
   const gapY = 0.15;
-  const totalW = 9.0;
+  const totalW = isQuarks ? 9.0 : 9.0;
   const cardW = (totalW - (cols - 1) * gapX) / cols;
-  const availH = 4.7 - startY;
+  const availH = (isQuarks ? 4.3 : 4.7) - startY;  // quarks slide shorter
   const cardH = (availH - (rows - 1) * gapY) / rows;
 
   for (let i = 0; i < count; i++) {
@@ -1031,59 +1185,108 @@ async function renderCardsGrid(slide, spec, pres) {
 
     const IconComp = ICON_MAP[i % ICON_MAP.length];
 
-    // Card body
+    // ── Card body ──────────────────────────────────────────────────
     slide.addShape(pres.shapes.RECTANGLE, {
       x, y, w: cardW, h: cardH,
       fill: { color: t.card_bg },
-      shadow: makeShadow(0.05),
+      shadow: makeShadow(isQuarks ? 0.04 : 0.05),
       line: { color: t.card_bg, width: 0 }
     });
 
-    // Accent top bar
-    slide.addShape(pres.shapes.RECTANGLE, {
-      x, y, w: cardW, h: 0.05,
-      fill: { color: t.primary },
-      line: { color: t.primary, width: 0 }
-    });
+    // ── Accent bar ─────────────────────────────────────────────────
+    // Quarks spec: emerald left bar (like story slide accent)
+    // Others: primary color top bar
+    if (isQuarks) {
+      slide.addShape(pres.shapes.RECTANGLE, {
+        x, y, w: 0.05, h: cardH,         // left bar for quarks
+        fill: { color: t.primary },
+        line: { type: 'none' }
+      });
+    } else {
+      slide.addShape(pres.shapes.RECTANGLE, {
+        x, y, w: cardW, h: 0.05,          // top bar for others
+        fill: { color: t.primary },
+        line: { color: t.primary, width: 0 }
+      });
+    }
 
-    // Icon circle (smaller for dense grid)
-    const iconSize = 0.3;
+    // ── Icon circle ────────────────────────────────────────────────
+    const iconSize = isQuarks ? 0.32 : 0.3;
+    const iconX = isQuarks
+      ? x + 0.18                          // left-aligned for quarks (left bar layout)
+      : x + (cardW - iconSize) / 2;       // centered for others (top bar layout)
+    const iconY = y + 0.14;
+
     slide.addShape(pres.shapes.OVAL, {
-      x: x + (cardW - iconSize) / 2, y: y + 0.12, w: iconSize, h: iconSize,
-      fill: { color: t.primary }, line: { color: t.primary, width: 0 }
+      x: iconX, y: iconY,
+      w: iconSize, h: iconSize,
+      fill: { color: t.primary },
+      line: { type: 'none' }
     });
 
     const iconData = await iconToBase64(IconComp, `#${t.title_dark}`, 256);
     slide.addImage({
       data: iconData,
-      x: x + (cardW - iconSize + 0.06) / 2, y: y + 0.15,
+      x: iconX + 0.03, y: iconY + 0.03,
       w: iconSize - 0.06, h: iconSize - 0.06
     });
 
-    // Text (split on first colon or use full text)
+    // ── Card text ──────────────────────────────────────────────────
     const parts = bullets[i].split(':');
     const title = parts[0].trim();
     const desc = parts.length > 1 ? parts.slice(1).join(':').trim() : '';
 
-    slide.addText(title, {
-      x: x + 0.08, y: y + iconSize + 0.15, w: cardW - 0.16, h: 0.28,
-      fontSize: 10, fontFace: 'Calibri', bold: true,
-      color: t.title_light, align: 'center', valign: 'middle', margin: 0
-    });
-
-    if (desc) {
-      slide.addText(desc, {
-        x: x + 0.08, y: y + iconSize + 0.42, w: cardW - 0.16, h: cardH - iconSize - 0.55,
-        fontSize: 9, fontFace: 'Calibri',
-        color: t.body_light, align: 'center', valign: 'top', margin: 0
+    if (isQuarks) {
+      // Quarks: left-aligned text sitting to the right of left-bar + icon
+      // spec: never center body text
+      slide.addText(title, {
+        x: x + 0.65, y: y + 0.1,
+        w: cardW - 0.75, h: 0.3,
+        fontSize: 11,                     // spec minimum 11pt
+        fontFace: fonts(spec).title,
+        bold: true,
+        color: t.title_light,
+        align: 'left', valign: 'middle', margin: 0
       });
+
+      if (desc) {
+        slide.addText(desc, {
+          x: x + 0.65, y: y + 0.42,
+          w: cardW - 0.75, h: cardH - 0.55,
+          fontSize: 11,                   // spec minimum 11pt — was 9pt
+          fontFace: fonts(spec).body,     // Calibri Light
+          color: t.body_light,
+          align: 'left',                  // spec: never center body text
+          valign: 'top', margin: 0
+        });
+      }
+    } else {
+      // Non-quarks: centered layout (existing behavior)
+      slide.addText(title, {
+        x: x + 0.08, y: y + iconSize + 0.15,
+        w: cardW - 0.16, h: 0.28,
+        fontSize: 11,                     // was 10 — bumped to spec minimum
+        fontFace: 'Calibri', bold: true,
+        color: t.title_light,
+        align: 'center', valign: 'middle', margin: 0
+      });
+
+      if (desc) {
+        slide.addText(desc, {
+          x: x + 0.08, y: y + iconSize + 0.42,
+          w: cardW - 0.16, h: cardH - iconSize - 0.55,
+          fontSize: 11,                   // was 9 — bumped to spec minimum
+          fontFace: 'Calibri',
+          color: t.body_light,
+          align: 'center', valign: 'top', margin: 0
+        });
+      }
     }
   }
 
   addSlideNum(slide, spec);
   addNotes(slide, spec);
 }
-
 // ─── 12. THREE-COLUMN LAYOUT ─────────────────────────────────────────────────
 // Three equal columns with colored headers and bullet lists (like "Engagement Models")
 async function renderThreeColumn(slide, spec, pres) {
@@ -1285,7 +1488,13 @@ const LAYOUT_MAP = {
 
 async function build(deckSpec, outputPath) {
   const pres = new pptxgen();
-  pres.layout = 'LAYOUT_16x9';
+  const isQuarksTheme = deckSpec.theme_choice === 'quarks_brand' || deckSpec.color_theme === 'quarks_brand';
+  if (isQuarksTheme) {
+    pres.defineLayout({ name: 'QUARKS_LAYOUT', width: 10, height: 5.625 });
+    pres.layout = 'QUARKS_LAYOUT';
+  } else {
+    pres.layout = 'LAYOUT_16x9';
+  }
   pres.title = deckSpec.deck_title || 'Sales Presentation';
   pres.author = 'Sales Brain';
 
@@ -1300,8 +1509,9 @@ async function build(deckSpec, outputPath) {
     || COLOR_THEMES[deckSpec.color_theme]
     || COLOR_THEMES.midnight_executive;
 
-  console.log('[theme selected]', deckSpec.theme_choice, '→',
-    COLOR_THEMES[deckSpec.theme_choice] ? 'matched ✅' : 'FALLBACK midnight_executive ⚠️'
+  const matchedThemeKey = deckSpec.theme_choice || deckSpec.color_theme;
+  console.log('[theme selected]',
+    COLOR_THEMES[matchedThemeKey] ? `${matchedThemeKey} ✅` : 'FALLBACK midnight_executive ⚠️'
   );
 
   // Read brand.json

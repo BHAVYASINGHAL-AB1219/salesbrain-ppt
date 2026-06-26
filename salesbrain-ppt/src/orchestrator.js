@@ -5,6 +5,7 @@ const designAgent = require('./designAgent');
 const validator = require('./validator');
 const fs = require('fs');
 const path = require('path');
+const { matchCapabilities } = require('./capabilities')
 
 const claude = new Anthropic({
   apiKey: process.env.LITELLM_API_KEY || 'dummy',
@@ -19,6 +20,7 @@ const CONTENT_MODEL = process.env.CONTENT_MODEL || 'kimi-k2p6';
  */
 async function run(payload, jobId) {
   console.log(`[${jobId}] Orchestrator: planning deck structure...`);
+  const matchedCapabilities = matchCapabilities(payload, 6);
 
   // ── Phase 1: Claude decides the slide plan ──────────────────────────────────
   let plan;
@@ -30,12 +32,63 @@ async function run(payload, jobId) {
       const planResponse = await claude.messages.create({
         model: CONTENT_MODEL,
         max_tokens: 8192,
-        system: `You are a sales deck strategist. Given a Sales Brain alignment payload, output a JSON slide plan. Return ONLY valid JSON, no markdown fences.
+        system: `You are a sales deck strategist. Given a Sales Brain alignment payload, output a JSON slide plan.
 
 IMPORTANT JSON RULES:
+- MUST wrap the JSON in \`\`\`json and \`\`\` fences.
+- CRITICAL: DO NOT output any chain of thought, reasoning, or explanation. Start your response IMMEDIATELY with \`\`\`json.
 - Escape all double quotes inside string values using \\"
 - Do NOT use unescaped newlines (\\n) inside string values. Keep text on a single line.
 - Ensure the JSON is strictly valid.
+
+## INTRO DECK STORY ARC — mandatory when deck_goal is "intro"
+
+Follow this arc structure in order. Each stage is mandatory.
+The number of slides per stage scales based on payload richness.
+
+## STAGE RULES — expand or contract based on available data:
+
+STAGE 1 — OPENING (always 2 slides)
+- cover        → always 1 slide, dark
+- agenda       → always 1 slide, light
+
+STAGE 2 — THEIR WORLD & PAIN (1-2 slides)
+- problem      → always 1 slide
+- data         → ADD 1 extra slide ONLY IF payload has chart_data 
+                 OR alignment_score < 70 (pain needs more evidence)
+
+STAGE 3 — THE UNLOCK (1-3 slides)
+- solution     → always 1 slide
+- services_grid → always 1 slide (use matched capabilities only, max 6)
+- comparison   → ADD 1 extra slide ONLY IF payload.recommended_angle 
+                 contains words like "vs", "replace", "switch", "migration", 
+                 "currently using", "alternative"
+
+STAGE 4 — THE PROOF (1-2 slides)
+- case_study   → always 1 slide
+- data         → ADD 1 extra slide ONLY IF case_studies array has 
+                 more than 1 entry in payload
+
+STAGE 5 — HOW WE WORK (1-2 slides)
+- engagement_models → always 1 slide
+- pricing      → ADD 1 extra slide ONLY IF payload.budget_range exists 
+                 AND deck_goal is "proposal" or "intro" with known budget
+
+STAGE 6 — CLOSE (always 2 slides)
+- section_header → always 1 slide, dark, title = "Where We Go From Here"
+- cta           → always 1 slide, dark
+
+## SECTION HEADERS — insert between stages dynamically:
+- Add section_header dark slide at the START of stage 2, 3, 4, 5
+- Title of each section_header should reflect the CLIENT'S situation,
+  not generic labels like "Our Approach"
+- Example: instead of "The Problem" write "Why [client.industry] Teams 
+  Struggle With [pain_points[0]]"
+
+## SLIDE COUNT RULES:
+Minimum slides: 8
+Maximum slides: 16
+Never go below 8 or above 16 regardless of payload richness.
 
 ## SLIDE VARIETY RULES
 - Never use the same slide_type twice in a row.
@@ -47,6 +100,10 @@ IMPORTANT JSON RULES:
 
 ## THEME SELECTION — follow this decision tree in order, stop at first match
 
+
+STEP 0 — Check our_company identity first:
+- If our_company.name contains "Quarks" → "quarks_brand" always
+- This overrides all industry and deck_goal rules below
 STEP 1 — Match by client.industry:
 - Tech, SaaS, Software, AI, Finance, Banking, Consulting → "golden_navy"
 - Healthcare, Hospital, EdTech, Education, HR, Sustainability → "teal_trust"
@@ -85,6 +142,10 @@ Never output any other value. Never invent a theme name.
 - agenda, team, pricing → "light"
 
 ## SLIDE TYPE SCHEMA
+- services_grid: ONLY use the MATCHED CAPABILITIES provided in the user message.
+  Do not invent capabilities. Do not list all services generically.
+  Format each bullet as "Capability Title: one-line client benefit"
+  Max 6 items. Choose the ones most directly tied to client.pain_points.
 - cover: Always first.
 - agenda: Second slide. Shows roadmap of sections.
 - section_header: Introduces a new section. Use 2-3 times per deck.
@@ -113,21 +174,60 @@ Schema:
     }
   ],
   "deck_title": "string",
-  "theme_choice": "golden_navy|teal_trust|coral_energy|charcoal_minimal|ocean_gradient|sage_calm"
+  "theme_choice": "golden_navy|teal_trust|coral_energy|charcoal_minimal|ocean_gradient|sage_calm|quarks_brand",
+  "total_slides": number
 }`,
 
         messages: [
-          { role: 'user', content: JSON.stringify(payload) }
+          {
+            role: 'user', content: `${JSON.stringify(payload)}
+
+            MATCHED CAPABILITIES FOR THIS CLIENT (use these in services_grid slide):
+            ${matchedCapabilities.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+            Only show capabilities that are relevant to the client's pain points above.
+            Do not show all 20. Max 6 in the services_grid slide.
+            
+            CRITICAL INSTRUCTION: You MUST wrap the JSON in \`\`\`json and \`\`\` fences. Do NOT output any chain of thought, reasoning, or explanation. Start your response immediately with \`\`\`json.`
+          }
         ]
       });
 
       plan = parseLLMResponse(planResponse);
+      // After parsing the LLM response in orchestrator.js
+      plan = parseLLMResponse(planResponse);
+
+      // Validate slide count is within bounds
+      if (plan.slides.length < 8) {
+        console.warn(`[orchestrator] Slide count too low: ${plan.slides.length} — check payload richness`);
+      }
+      if (plan.slides.length > 16) {
+        console.warn(`[orchestrator] Slide count too high: ${plan.slides.length} — trimming`);
+        // Keep first 2 (cover+agenda), last 2 (section_header+cta), trim middle
+        const opening = plan.slides.slice(0, 2);
+        const closing = plan.slides.slice(-2);
+        const middle = plan.slides.slice(2, -2).slice(0, 12);
+        plan.slides = [...opening, ...middle, ...closing];
+      }
+
+      // Inject total count into each slide spec so assembler can use it
+      plan.slides = plan.slides.map((s, i) => ({
+        ...s,
+        slide_number: i + 1,
+        total_slides: plan.slides.length
+      }));
+
+      console.log(`[orchestrator] Planned ${plan.slides.length} slides for ${payload.client?.name}`);
       break; // Success
     } catch (e) {
       console.error(`[${jobId}] Orchestrator plan attempt ${attempts} failed: ${e.message}`);
       if (attempts >= 3) {
         throw new Error(`failed to parse slide plan after 3 attempts — ${e.message}`);
       }
+      // Wait before retrying to respect rate limits
+      const retryDelay = 5000 * attempts;
+      console.log(`[${jobId}] Sleeping for ${retryDelay}ms before retrying...`);
+      await new Promise(r => setTimeout(r, retryDelay));
     }
   }
 
@@ -147,7 +247,9 @@ Schema:
 
   // ── Phase 2: Parallel Content Generation (Batched) ────────────────────────
   const slides = [];
-  const BATCH_SIZE = 3;
+  const delayMs = parseInt(process.env.RATE_LIMIT_DELAY_MS || '0', 10);
+  const BATCH_SIZE = delayMs > 0 ? 1 : 3;
+
   for (let i = 0; i < plan.slides.length; i += BATCH_SIZE) {
     const batch = plan.slides.slice(i, i + BATCH_SIZE);
     const batchJobs = batch.map((slidePlan, idx) => {
@@ -159,6 +261,11 @@ Schema:
     });
     const batchResults = await Promise.all(batchJobs);
     slides.push(...batchResults);
+
+    if (delayMs > 0 && i + BATCH_SIZE < plan.slides.length) {
+      console.log(`[${jobId}] Sleeping for ${delayMs}ms to respect rate limits...`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
   }
 
   console.log(`[${jobId}] Orchestrator: all slides generated and validated`);

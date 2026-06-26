@@ -10,9 +10,11 @@ model_list:
   - model_name: kimi-k2p6
     litellm_params:
       model: fireworks_ai/accounts/fireworks/models/kimi-k2p6
+      api_key: "os.environ/FIREWORKS_API_KEY"
   - model_name: glm-5p2
     litellm_params:
       model: fireworks_ai/accounts/fireworks/models/glm-5p2
+      api_key: "os.environ/FIREWORKS_API_KEY"
   - model_name: deepseek-ai/DeepSeek-V4-Flash
     litellm_params:
       model: huggingface/deepseek-ai/DeepSeek-V4-Flash
@@ -21,3 +23,12 @@ model_list:
     litellm_params:
       model: huggingface/google/gemma-4-12B-it
       api_key: "os.environ/HUGGINGFACE_API_KEY"
+  - model_name: moonshotai/kimi-k2.6
+    litellm_params:
+      model: custom_openai/moonshotai/kimi-k2.6
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: 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
+  - model_name: llama3.2:3b
+    litellm_params:
+      model: ollama/llama3.2:3b
+      api_base: http://localhost:11434

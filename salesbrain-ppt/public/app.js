@@ -52,15 +52,10 @@ document.getElementById('deckForm').addEventListener('submit', async (e) => {
     }
 
     // Handle File Download
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${payload.client.name.replace(/\s+/g, '_')}_Presentation.pptx`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    const data = await response.json();
+    if (data.downloadUrl) {
+      window.location.href = data.downloadUrl;
+    }
 
     statusMsg.textContent = 'Success! Your presentation has been downloaded.';
     statusMsg.style.color = '#14b8a6'; // Teal
