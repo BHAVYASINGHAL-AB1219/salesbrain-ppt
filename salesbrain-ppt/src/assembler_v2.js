@@ -335,16 +335,39 @@ function addNotes(slide, spec) {
 }
 
 // ─── Eyebrow label helper — adds uppercase section label above title ─────────
-function addEyebrow(slide, spec, label) {
+// Replace your existing addEyebrow function entirely:
+function addEyebrow(slide, spec, pres, label) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   const eyebrow = label || EYEBROW_MAP[spec.slide_type] || '';
   if (!eyebrow) return;
-  const color = spec.is_dark_slide ? t.accent : t.primary;
-  slide.addText(eyebrow, {
-    x: 0.5, y: 0.25, w: 6, h: 0.25,
-    fontSize: 9, fontFace: 'Calibri', bold: true,
-    color, align: 'left', charSpacing: 4, margin: 0
-  });
+
+  if (isQuarks) {
+    // PATTERN 4: Full-width header bar containing the eyebrow text
+    // like the reference PPT slides 3, 5, 7
+    slide.addShape(pres.shapes.RECTANGLE, {
+      x: 0, y: 0,
+      w: 10,            // full slide width for quarks (10" canvas)
+      h: 0.52,
+      fill: { color: t.dark_bg },
+      line: { type: 'none' }
+    });
+    slide.addText(eyebrow.toUpperCase(), {
+      x: 0.4, y: 0, w: 9.2, h: 0.52,
+      fontSize: 11, fontFace: 'Calibri', bold: true,
+      color: t.secondary,        // cyan inside dark bar
+      charSpacing: 3,
+      align: 'left', valign: 'middle', margin: 0
+    });
+  } else {
+    // Non-quarks: existing floating eyebrow
+    const color = spec.is_dark_slide ? t.accent : t.primary;
+    slide.addText(eyebrow, {
+      x: 0.5, y: 0.25, w: 6, h: 0.25,
+      fontSize: 11, fontFace: 'Calibri', bold: true,
+      color, align: 'left', charSpacing: 4, margin: 0
+    });
+  }
 }
 
 // ─── Decorative background shape — subtle circle on content slides ───────────
@@ -370,14 +393,15 @@ async function renderCover(slide, spec, pres) {
 
   // Large geometric circles — visual motif, top-right bleed
   slide.addShape(pres.shapes.OVAL, {
-    x: 7.2, y: -1.2, w: 4.5, h: 4.5,
-    fill: { color: t.accent, transparency: 82 },
-    line: { color: t.accent, width: 0 }
+    x: 7.5, y: -1.5, w: 5.8, h: 5.8,
+    fill: { color: '0060B8', transparency: 60 },   // lighter blue
+    line: { type: 'none' }
   });
+  // Front circle — darker, smaller, LESS transparent = occludes back = depth
   slide.addShape(pres.shapes.OVAL, {
-    x: 7.8, y: -0.6, w: 3, h: 3,
-    fill: { color: t.secondary, transparency: 75 },
-    line: { color: t.secondary, width: 0 }
+    x: 9.5, y: 2.2, w: 4.0, h: 4.0,
+    fill: { color: '021A3A', transparency: 40 },   // darker navy, more solid
+    line: { type: 'none' }
   });
 
   // Eyebrow label
@@ -554,7 +578,7 @@ async function renderBulletsWithIcons(slide, spec, pres) {
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
@@ -647,13 +671,14 @@ async function renderBulletsWithIcons(slide, spec, pres) {
 // ─── 4. SPLIT TWO-COLUMN ─────────────────────────────────────────────────────
 async function renderSplitTwoCol(slide, spec, pres) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
+    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 9, h: 0.55,
     fontSize: 28, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0
   });
@@ -737,13 +762,14 @@ async function renderSplitTwoCol(slide, spec, pres) {
 // ─── 5. COMPARISON COLUMNS ───────────────────────────────────────────────────
 async function renderComparison(slide, spec, pres) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
+    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 9, h: 0.55,
     fontSize: 28, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0
   });
@@ -809,13 +835,14 @@ async function renderComparison(slide, spec, pres) {
 // ─── 6. DATA + CHART ─────────────────────────────────────────────────────────
 async function renderDataChart(slide, spec, pres) {
   const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 7, h: 0.55,
+    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 7, h: 0.55,
     fontSize: 28, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0
   });
@@ -878,7 +905,7 @@ async function renderCaseStudy(slide, spec, pres) {
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
@@ -943,6 +970,7 @@ async function renderCaseStudy(slide, spec, pres) {
 }
 
 // ─── 8. CTA / CLOSING ────────────────────────────────────────────────────────
+// FIND AND DELETE THIS ENTIRE EXISTING FUNCTION:
 async function renderCTA(slide, spec, pres) {
   const t = spec.theme;
   slide.background = { color: t.dark_bg };
@@ -996,13 +1024,119 @@ async function renderCTA(slide, spec, pres) {
   addNotes(slide, spec);
 }
 
+
+// REPLACE WITH THIS ENTIRE NEW FUNCTION:
+async function renderCTA(slide, spec, pres) {
+  const t = spec.theme;
+  const isQuarks = t === COLOR_THEMES.quarks_brand;
+  slide.background = { color: t.dark_bg };
+
+  // ── PATTERN 5: Layered geometric circles — back circle ───────────
+  // Back circle — lighter, larger, more transparent
+  slide.addShape(pres.shapes.OVAL, {
+    x: 7.0, y: -1.8, w: 6.5, h: 6.5,
+    fill: { color: isQuarks ? '059669' : '0060B8', transparency: 75 },
+    line: { type: 'none' }
+  });
+  // Front circle — darker, smaller, less transparent = occludes back = depth
+  slide.addShape(pres.shapes.OVAL, {
+    x: 9.2, y: 2.8, w: 4.2, h: 4.2,
+    fill: { color: isQuarks ? '034D32' : '021A3A', transparency: 40 },
+    line: { type: 'none' }
+  });
+  // Small decorative rectangle — bottom right corner
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: 11.8, y: 6.2, w: 1.8, h: 1.8,
+    fill: { color: t.secondary, transparency: 80 },
+    line: { type: 'none' }
+  });
+
+  // ── PATTERN 1: Two-line split color headline ──────────────────────
+  // Line 1 — white
+  slide.addText(spec.title || "Let's Build Something", {
+    x: 1.0, y: 1.3, w: 11.0, h: 0.9,
+    fontSize: 40, fontFace: fonts(spec).title, bold: true,
+    color: t.title_dark,
+    align: 'center', valign: 'middle', margin: 0
+  });
+  // Line 2 — cyan (the "Extraordinary Together" effect)
+  slide.addText(spec.subtitle || 'Extraordinary Together', {
+    x: 1.0, y: 2.2, w: 11.0, h: 0.9,
+    fontSize: 40, fontFace: fonts(spec).title, bold: true,
+    color: t.secondary,              // different color from line 1
+    align: 'center', valign: 'middle', margin: 0
+  });
+
+  // Tagline — italic, sits below the two headlines
+  slide.addText('Revolutionizing Future Digitally', {
+    x: 1.5, y: 3.2, w: 10.0, h: 0.4,
+    fontSize: 15, fontFace: fonts(spec).body,
+    color: t.body_dark,
+    align: 'center', italic: true, margin: 0
+  });
+
+  // ── PATTERN 1: Two FLAT rectangle CTA buttons side by side ───────
+  // Button 1 — left
+  slide.addShape(pres.shapes.RECTANGLE, {   // flat rect NOT rounded
+    x: 2.2, y: 3.9, w: 3.8, h: 0.65,
+    fill: { color: t.primary },
+    line: { type: 'none' }
+  });
+  slide.addText(
+    spec.bullets?.[0] || 'Visit: www.qtsolv.com',
+    {
+      x: 2.2, y: 3.9, w: 3.8, h: 0.65,
+      fontSize: 13, fontFace: fonts(spec).title, bold: true,
+      color: t.title_dark,
+      align: 'center', valign: 'middle', margin: 0
+    }
+  );
+
+  // Button 2 — right
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: 7.3, y: 3.9, w: 3.8, h: 0.65,
+    fill: { color: t.primary },
+    line: { type: 'none' }
+  });
+  slide.addText(
+    spec.bullets?.[1] || 'Email: contact@qtsolv.com',
+    {
+      x: 7.3, y: 3.9, w: 3.8, h: 0.65,
+      fontSize: 13, fontFace: fonts(spec).title, bold: true,
+      color: t.title_dark,
+      align: 'center', valign: 'middle', margin: 0
+    }
+  );
+
+  // Footer rows — offices and certifications
+  if (spec.bullets?.[2]) {
+    slide.addText(spec.bullets[2], {
+      x: 1.0, y: 4.85, w: 11.0, h: 0.35,
+      fontSize: 12, fontFace: fonts(spec).body,
+      color: t.body_dark,
+      align: 'center', margin: 0
+    });
+  }
+  if (spec.bullets?.[3]) {
+    slide.addText(spec.bullets[3], {
+      x: 1.0, y: 5.25, w: 11.0, h: 0.35,
+      fontSize: 11, fontFace: fonts(spec).body,
+      color: '5A6A85',
+      align: 'center', margin: 0
+    });
+  }
+
+  addSlideNum(slide, spec);
+  addNotes(slide, spec);
+}
+
 // ─── 9. AGENDA / NUMBERED STEPS ──────────────────────────────────────────────
 async function renderAgenda(slide, spec, pres) {
   const t = spec.theme;
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
@@ -1070,7 +1204,7 @@ async function renderPricing(slide, spec, pres) {
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
@@ -1132,11 +1266,11 @@ async function renderCardsGrid(slide, spec, pres) {
   // Quarks spec forbids decorative shapes on content slides — skip for quarks
   if (!isQuarks) addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   // ── Slide title ──────────────────────────────────────────────────
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5,
+    x: 0.5, y: isQuarks ? 0.65 : 0.5,
     w: isQuarks ? 9.0 : 9.0,
     h: 0.55,
     fontSize: isQuarks ? 32 : 26,      // spec: 36–44pt titles; 32 fits with subtitle
@@ -1186,29 +1320,26 @@ async function renderCardsGrid(slide, spec, pres) {
     const IconComp = ICON_MAP[i % ICON_MAP.length];
 
     // ── Card body ──────────────────────────────────────────────────
+    // Replace the card body + accent bar block inside the for loop:
+
+    // ── PATTERN 2: Shadow card — NO accent bar, border + shadow only ──
     slide.addShape(pres.shapes.RECTANGLE, {
       x, y, w: cardW, h: cardH,
-      fill: { color: t.card_bg },
-      shadow: makeShadow(isQuarks ? 0.04 : 0.05),
-      line: { color: t.card_bg, width: 0 }
+      fill: { color: isQuarks ? t.card_bg : 'FFFFFF' },  // WHITE cards like reference
+      shadow: {
+        type: 'outer',
+        color: '000000',
+        blur: 8,
+        offset: 3,
+        angle: 135,           // bottom-right shadow = 3D lifted feel
+        opacity: 0.10         // very subtle — just enough to lift card
+      },
+      line: {
+        color: isQuarks ? 'D0DCF0' : 'E2E8F0',   // thin visible border
+        width: 0.5
+      }
     });
-
-    // ── Accent bar ─────────────────────────────────────────────────
-    // Quarks spec: emerald left bar (like story slide accent)
-    // Others: primary color top bar
-    if (isQuarks) {
-      slide.addShape(pres.shapes.RECTANGLE, {
-        x, y, w: 0.05, h: cardH,         // left bar for quarks
-        fill: { color: t.primary },
-        line: { type: 'none' }
-      });
-    } else {
-      slide.addShape(pres.shapes.RECTANGLE, {
-        x, y, w: cardW, h: 0.05,          // top bar for others
-        fill: { color: t.primary },
-        line: { color: t.primary, width: 0 }
-      });
-    }
+    // NO accent bar drawn — shadow + border IS the design
 
     // ── Icon circle ────────────────────────────────────────────────
     const iconSize = isQuarks ? 0.32 : 0.3;
@@ -1294,7 +1425,7 @@ async function renderThreeColumn(slide, spec, pres) {
   slide.background = { color: t.light_bg };
   addDecorativeShape(slide, spec, pres);
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
@@ -1349,11 +1480,9 @@ async function renderThreeColumn(slide, spec, pres) {
   const headerH = 0.5;
   const bodyH = 3.1;
   const isLightAccent = parseInt(t.accent, 16) > 0xAAAAAA;
-  const colors = [
-    t.secondary,
-    t.primary,
-    isLightAccent ? t.dark_bg : t.accent
-  ];
+  const colors = [t.secondary, t.primary, isLightAccent ? t.dark_bg : t.accent];
+
+  const isDarkSlide = spec.is_dark_slide;
 
   for (let c = 0; c < Math.min(columns.length, 3); c++) {
     const x = 0.5 + c * (colW + gap);
@@ -1368,16 +1497,27 @@ async function renderThreeColumn(slide, spec, pres) {
     slide.addText(col.header, {
       x, y: startY, w: colW, h: headerH,
       fontSize: 13, fontFace: 'Calibri', bold: true,
-      color: 'FFFFFF', align: 'center', valign: 'middle', margin: 0
+      color: isDarkSlide ? t.accent : 'FFFFFF',  // GOLD on dark, white on light
+      align: 'center', valign: 'middle', margin: 0
     });
 
     // Column body card
-    slide.addShape(pres.shapes.RECTANGLE, {
-      x, y: startY + headerH, w: colW, h: bodyH,
-      fill: { color: t.card_bg },
-      shadow: makeShadow(0.05),
-      line: { color: t.card_bg, width: 0 }
-    });
+    if (isDarkSlide) {
+      // PATTERN 3: slightly lighter than bg + thin electric blue border
+      slide.addShape(pres.shapes.RECTANGLE, {
+        x, y: startY + headerH, w: colW, h: bodyH,
+        fill: { color: '0E2D60' },         // lighter than dark_bg
+        line: { color: t.primary, width: 0.75 }  // electric blue border
+      });
+    } else {
+      // Light slide: shadow card (existing behavior)
+      slide.addShape(pres.shapes.RECTANGLE, {
+        x, y: startY + headerH, w: colW, h: bodyH,
+        fill: { color: t.card_bg },
+        shadow: makeShadow(0.05),
+        line: { color: t.card_bg, width: 0 }
+      });
+    }
 
     if (col.items && col.items.length) {
       slide.addText(
@@ -1403,7 +1543,7 @@ async function renderClientLogos(slide, spec, pres) {
   const t = spec.theme;
   slide.background = { color: t.light_bg };
 
-  addEyebrow(slide, spec);
+  addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
     x: 0.5, y: 0.5, w: 9, h: 0.55,
