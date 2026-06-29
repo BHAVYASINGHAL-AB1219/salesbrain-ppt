@@ -279,11 +279,12 @@ function defineSlidesMasters(pres, theme, brand) {
   // "Quarks wordmark bottom-left on dark, top-left on light"
   // Already handled by logo above — but if no logo, add qtsolv.com to footer
   if (isQuarks) {
+    const websiteText = brand?.website ? `www.${brand.website.replace(/^https?:\/\/(www\.)?/, '')}` : 'www.qtsolv.com';
     lightObjects.push({
       text: {
-        text: 'www.qtsolv.com',
+        text: websiteText,
         options: {
-          x: slideW - 2.0, y: footerLogoY, w: 1.8, h: 0.2,
+          x: slideW - 3.5, y: footerLogoY, w: 2.2, h: 0.2,
           fontSize: 10, fontFace: 'Calibri',
           color: theme.body_light,
           align: 'right'
@@ -292,9 +293,9 @@ function defineSlidesMasters(pres, theme, brand) {
     });
     darkObjects.push({
       text: {
-        text: 'www.qtsolv.com',
+        text: websiteText,
         options: {
-          x: slideW - 2.0, y: footerLogoY, w: 1.8, h: 0.2,
+          x: slideW - 3.5, y: footerLogoY, w: 2.2, h: 0.2,
           fontSize: 10, fontFace: 'Calibri',
           color: theme.body_dark,
           align: 'right'
@@ -581,16 +582,18 @@ async function renderBulletsWithIcons(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.08, w: 9, h: 0.3,
+      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
       fontSize: 13, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      color: t.secondary, align: 'left', margin: 0,
+      valign: 'top', fit: 'shrink', autoFit: true
     });
   }
 
@@ -607,7 +610,7 @@ async function renderBulletsWithIcons(slide, spec, pres) {
 
   const gapX = 0.25;
   const gapY = 0.2;
-  const totalW = 9.0;
+  const totalW = (spec.slideW || 13.33) - 1.0;
   const cardW = (totalW - (cols - 1) * gapX) / cols;
   const availH = 4.65 - startY;
   const cardH = (availH - (rows - 1) * gapY) / rows;
@@ -908,20 +911,22 @@ async function renderCaseStudy(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
+  const totalW = (spec.slideW || 13.33) - 1.0;
   // Quote card with accent top bar
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.3, w: 9.0, h: 1.55,
+    x: 0.5, y: 1.3, w: totalW, h: 1.55,
     fill: { color: t.card_bg },
     shadow: makeShadow(0.07),
     line: { color: t.card_bg, width: 0 }
   });
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.3, w: 9.0, h: 0.06,
+    x: 0.5, y: 1.3, w: totalW, h: 0.06,
     fill: { color: t.accent },
     line: { color: t.accent, width: 0 }
   });
@@ -929,20 +934,22 @@ async function renderCaseStudy(slide, spec, pres) {
   slide.addText([
     { text: `"${spec.subtitle || 'Client outcome'}"`, options: { italic: true, color: t.title_light, fontSize: 15 } }
   ], {
-    x: 0.75, y: 1.4, w: 8.5, h: 1.35,
+    x: 0.75, y: 1.4, w: totalW - 0.5, h: 1.35,
     fontFace: 'Cambria', valign: 'middle'
   });
 
   // Results grid — 2x2 stat callout cards
   const bullets = (spec.bullets || []).slice(0, 4);
+  const gapX = 0.4;
+  const cardW = (totalW - gapX) / 2;
   const positions = [
-    [0.5, 2.95], [5.1, 2.95],
-    [0.5, 3.93], [5.1, 3.93]
+    [0.5, 2.95], [0.5 + cardW + gapX, 2.95],
+    [0.5, 3.93], [0.5 + cardW + gapX, 3.93]
   ];
   for (let i = 0; i < Math.min(bullets.length, 4); i++) {
     const [x, y] = positions[i];
     slide.addShape(pres.shapes.RECTANGLE, {
-      x, y, w: 4.4, h: 0.88,
+      x, y, w: cardW, h: 0.88,
       fill: { color: t.card_bg },
       shadow: makeShadow(0.06),
       line: { color: t.card_bg, width: 0 }
@@ -959,7 +966,7 @@ async function renderCaseStudy(slide, spec, pres) {
     slide.addImage({ data: iconData, x: x + 0.18, y: y + 0.22, w: 0.36, h: 0.36 });
 
     slide.addText(bullets[i], {
-      x: x + 0.66, y, w: 3.6, h: 0.88,
+      x: x + 0.66, y, w: cardW - 0.8, h: 0.88,
       fontSize: 13, fontFace: 'Calibri',
       color: t.body_light, valign: 'middle', margin: 0
     });
@@ -969,157 +976,109 @@ async function renderCaseStudy(slide, spec, pres) {
   addNotes(slide, spec);
 }
 
-// ─── 8. CTA / CLOSING ────────────────────────────────────────────────────────
-// FIND AND DELETE THIS ENTIRE EXISTING FUNCTION:
-async function renderCTA(slide, spec, pres) {
-  const t = spec.theme;
-  slide.background = { color: t.dark_bg };
-
-  // Background circle motif (same as cover)
-  slide.addShape(pres.shapes.OVAL, {
-    x: -1, y: 2.5, w: 5, h: 5,
-    fill: { color: t.accent, transparency: 88 },
-    line: { color: t.accent, width: 0 }
-  });
-  slide.addShape(pres.shapes.OVAL, {
-    x: 7.5, y: -1, w: 3.5, h: 3.5,
-    fill: { color: t.secondary, transparency: 85 },
-    line: { color: t.secondary, width: 0 }
-  });
-
-  // Eyebrow
-  slide.addText('NEXT STEPS', {
-    x: 1, y: 1.0, w: 8, h: 0.3,
-    fontSize: 10, fontFace: 'Calibri', bold: true,
-    color: t.accent, align: 'center', charSpacing: 5, margin: 0
-  });
-
-  slide.addText(spec.title, {
-    x: 1, y: 1.4, w: 8, h: 1.5,
-    fontSize: 36, fontFace: 'Cambria', bold: true,
-    color: t.title_dark, align: 'center', valign: 'middle', margin: 0
-  });
-
-  if (spec.subtitle) {
-    slide.addText(spec.subtitle, {
-      x: 1.5, y: 3.0, w: 7, h: 0.6,
-      fontSize: 16, fontFace: 'Calibri',
-      color: t.body_dark, align: 'center', margin: 0
-    });
-  }
-
-  // CTA button
-  slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 3.6, y: 3.85, w: 2.8, h: 0.6,
-    fill: { color: t.accent }, rectRadius: 0.1,
-    line: { color: t.accent, width: 0 }
-  });
-  slide.addText("Let's Talk  →", {
-    x: 3.6, y: 3.85, w: 2.8, h: 0.6,
-    fontSize: 14, fontFace: 'Calibri', bold: true,
-    color: t.dark_bg, align: 'center', valign: 'middle', margin: 0
-  });
-
-  addSlideNum(slide, spec);
-  addNotes(slide, spec);
-}
-
-
-// REPLACE WITH THIS ENTIRE NEW FUNCTION:
 async function renderCTA(slide, spec, pres) {
   const t = spec.theme;
   const isQuarks = t === COLOR_THEMES.quarks_brand;
+  const slideW = isQuarks ? 10 : 13.33;
   slide.background = { color: t.dark_bg };
 
   // ── PATTERN 5: Layered geometric circles — back circle ───────────
   // Back circle — lighter, larger, more transparent
   slide.addShape(pres.shapes.OVAL, {
-    x: 7.0, y: -1.8, w: 6.5, h: 6.5,
+    x: slideW - 3.0, y: -1.8, w: 6.5, h: 6.5,
     fill: { color: isQuarks ? '059669' : '0060B8', transparency: 75 },
     line: { type: 'none' }
   });
   // Front circle — darker, smaller, less transparent = occludes back = depth
   slide.addShape(pres.shapes.OVAL, {
-    x: 9.2, y: 2.8, w: 4.2, h: 4.2,
+    x: slideW - 0.8, y: 2.8, w: 4.2, h: 4.2,
     fill: { color: isQuarks ? '034D32' : '021A3A', transparency: 40 },
     line: { type: 'none' }
   });
   // Small decorative rectangle — bottom right corner
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 11.8, y: 6.2, w: 1.8, h: 1.8,
+    x: slideW - 1.5, y: 6.2, w: 1.8, h: 1.8,
     fill: { color: t.secondary, transparency: 80 },
     line: { type: 'none' }
   });
 
   // ── PATTERN 1: Two-line split color headline ──────────────────────
+  const textX = 0.5;
+  const textW = slideW - 1.0;
+
   // Line 1 — white
   slide.addText(spec.title || "Let's Build Something", {
-    x: 1.0, y: 1.3, w: 11.0, h: 0.9,
-    fontSize: 40, fontFace: fonts(spec).title, bold: true,
+    x: textX, y: 1.3, w: textW, h: 0.9,
+    fontSize: 36, fontFace: fonts(spec).title, bold: true,
     color: t.title_dark,
     align: 'center', valign: 'middle', margin: 0
   });
   // Line 2 — cyan (the "Extraordinary Together" effect)
   slide.addText(spec.subtitle || 'Extraordinary Together', {
-    x: 1.0, y: 2.2, w: 11.0, h: 0.9,
-    fontSize: 40, fontFace: fonts(spec).title, bold: true,
+    x: textX, y: 2.2, w: textW, h: 0.9,
+    fontSize: 36, fontFace: fonts(spec).title, bold: true,
     color: t.secondary,              // different color from line 1
     align: 'center', valign: 'middle', margin: 0
   });
 
   // Tagline — italic, sits below the two headlines
   slide.addText('Revolutionizing Future Digitally', {
-    x: 1.5, y: 3.2, w: 10.0, h: 0.4,
+    x: textX, y: 3.2, w: textW, h: 0.4,
     fontSize: 15, fontFace: fonts(spec).body,
     color: t.body_dark,
     align: 'center', italic: true, margin: 0
   });
 
   // ── PATTERN 1: Two FLAT rectangle CTA buttons side by side ───────
+  const btnW = isQuarks ? 4.2 : 4.5;
+  const gap = isQuarks ? 0.4 : 1.0;
+  const startX = (slideW - (btnW * 2 + gap)) / 2;
+
   // Button 1 — left
   slide.addShape(pres.shapes.RECTANGLE, {   // flat rect NOT rounded
-    x: 2.2, y: 3.9, w: 3.8, h: 0.65,
+    x: startX, y: 3.9, w: btnW, h: 0.8,
     fill: { color: t.primary },
     line: { type: 'none' }
   });
-  slide.addText(
-    spec.bullets?.[0] || 'Visit: www.qtsolv.com',
-    {
-      x: 2.2, y: 3.9, w: 3.8, h: 0.65,
-      fontSize: 13, fontFace: fonts(spec).title, bold: true,
-      color: t.title_dark,
-      align: 'center', valign: 'middle', margin: 0
-    }
-  );
+
+  const btn1Text = (spec.brand?.website ? `Visit: www.${spec.brand.website.replace(/^https?:\/\/(www\.)?/, '')}` : spec.bullets?.[0]) || 'Visit: www.qtsolv.com';
+  slide.addText(btn1Text, {
+    x: startX, y: 3.9, w: btnW, h: 0.8,
+    fontSize: 13, fontFace: fonts(spec).title, bold: true,
+    color: t.title_dark,
+    align: 'center', valign: 'middle', margin: 0
+  });
 
   // Button 2 — right
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 7.3, y: 3.9, w: 3.8, h: 0.65,
+    x: startX + btnW + gap, y: 3.9, w: btnW, h: 0.8,
     fill: { color: t.primary },
     line: { type: 'none' }
   });
-  slide.addText(
-    spec.bullets?.[1] || 'Email: contact@qtsolv.com',
-    {
-      x: 7.3, y: 3.9, w: 3.8, h: 0.65,
-      fontSize: 13, fontFace: fonts(spec).title, bold: true,
-      color: t.title_dark,
-      align: 'center', valign: 'middle', margin: 0
-    }
-  );
+
+  const btn2Text = (spec.brand?.contact_email ? `Email: ${spec.brand.contact_email}` : spec.bullets?.[1]) || 'Email: contact@qtsolv.com';
+  slide.addText(btn2Text, {
+    x: startX + btnW + gap, y: 3.9, w: btnW, h: 0.8,
+    fontSize: 13, fontFace: fonts(spec).title, bold: true,
+    color: t.title_dark,
+    align: 'center', valign: 'middle', margin: 0
+  });
 
   // Footer rows — offices and certifications
-  if (spec.bullets?.[2]) {
-    slide.addText(spec.bullets[2], {
-      x: 1.0, y: 4.85, w: 11.0, h: 0.35,
+  const footer1 = spec.brand?.company_name || spec.bullets?.[2];
+  if (footer1) {
+    slide.addText(footer1, {
+      x: textX, y: 4.85, w: textW, h: 0.35,
       fontSize: 12, fontFace: fonts(spec).body,
       color: t.body_dark,
       align: 'center', margin: 0
     });
   }
-  if (spec.bullets?.[3]) {
-    slide.addText(spec.bullets[3], {
-      x: 1.0, y: 5.25, w: 11.0, h: 0.35,
+
+  const footer2 = spec.brand?.tagline || spec.bullets?.[3];
+  if (footer2) {
+    slide.addText(footer2, {
+      x: textX, y: 5.25, w: textW, h: 0.35,
       fontSize: 11, fontFace: fonts(spec).body,
       color: '5A6A85',
       align: 'center', margin: 0
@@ -1139,16 +1098,18 @@ async function renderAgenda(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.08, w: 9, h: 0.3,
+      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
       fontSize: 13, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      color: t.secondary, align: 'left', margin: 0,
+      valign: 'top', fit: 'shrink', autoFit: true
     });
   }
 
@@ -1158,6 +1119,11 @@ async function renderAgenda(slide, spec, pres) {
   const rightItems = items.slice(col2Start);
   const startY = spec.subtitle ? 1.55 : 1.3;
 
+  const totalW = (spec.slideW || 13.33) - 1.0;
+  const gapX = 0.5;
+  const colW = (totalW - gapX) / 2;
+  const cardW = colW - 0.55;
+  
   const drawNumberedItems = async (list, xStart, globalOffset) => {
     for (let idx = 0; idx < list.length; idx++) {
       const num = globalOffset + idx + 1;
@@ -1177,14 +1143,14 @@ async function renderAgenda(slide, spec, pres) {
 
       // Card behind text
       slide.addShape(pres.shapes.RECTANGLE, {
-        x: xStart + 0.55, y: y, w: 3.9, h: 0.56,
+        x: xStart + 0.55, y: y, w: cardW, h: 0.56,
         fill: { color: t.card_bg },
         shadow: makeShadow(0.04),
         line: { color: t.card_bg, width: 0 }
       });
 
       slide.addText(text, {
-        x: xStart + 0.7, y, w: 3.6, h: 0.56,
+        x: xStart + 0.7, y, w: cardW - 0.3, h: 0.56,
         fontSize: 14, fontFace: 'Calibri',
         color: t.body_light, valign: 'middle', margin: 0
       });
@@ -1192,7 +1158,7 @@ async function renderAgenda(slide, spec, pres) {
   };
 
   await drawNumberedItems(leftItems, 0.5, 0);
-  if (rightItems.length) await drawNumberedItems(rightItems, 5.2, col2Start);
+  if (rightItems.length) await drawNumberedItems(rightItems, 0.5 + colW + gapX, col2Start);
 
   addSlideNum(slide, spec);
   addNotes(slide, spec);
@@ -1207,16 +1173,18 @@ async function renderPricing(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.08, w: 9, h: 0.3,
+      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
       fontSize: 13, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      color: t.secondary, align: 'left', margin: 0,
+      valign: 'top', fit: 'shrink', autoFit: true
     });
   }
 
@@ -1232,16 +1200,19 @@ async function renderPricing(slide, spec, pres) {
       return cells.map(c => ({ text: c || '', options: { fill: { color: bg }, color: t.body_light, align: 'center' } }));
     })];
 
+    const totalW = (spec.slideW || 13.33) - 1.0;
+    const cw = [ (2.5/9)*totalW, (4.5/9)*totalW, (2/9)*totalW ];
     slide.addTable(tableRows, {
-      x: 0.5, y: 1.5, w: 9,
-      colW: [2.5, 4.5, 2],
+      x: 0.5, y: 1.5, w: totalW,
+      colW: cw,
       border: { pt: 0.5, color: 'E2E8F0' },
       fontFace: 'Calibri', fontSize: 13,
       rowH: 0.50
     });
   } else if (spec.stat_callout) {
+    const totalW = (spec.slideW || 13.33) - 1.0;
     slide.addText(spec.stat_callout.number, {
-      x: 0.5, y: 2.3, w: 9, h: 1.5,
+      x: 0.5, y: 2.3, w: totalW, h: 1.5,
       fontSize: 72, fontFace: 'Cambria', bold: true,
       color: t.primary, align: 'center', valign: 'middle', margin: 0
     });
@@ -1428,16 +1399,18 @@ async function renderThreeColumn(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.08, w: 9, h: 0.3,
+      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
       fontSize: 13, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      color: t.secondary, align: 'left', margin: 0,
+      valign: 'top', fit: 'shrink', autoFit: true
     });
   }
 
@@ -1475,8 +1448,8 @@ async function renderThreeColumn(slide, spec, pres) {
   }
 
   const startY = spec.subtitle ? 1.5 : 1.3;
-  const colW = 2.85;
   const gap = 0.22;
+  const colW = ((spec.slideW || 13.33) - 1.0 - (gap * 2)) / 3;
   const headerH = 0.5;
   const bodyH = 3.1;
   const isLightAccent = parseInt(t.accent, 16) > 0xAAAAAA;
@@ -1526,7 +1499,7 @@ async function renderThreeColumn(slide, spec, pres) {
           options: { bullet: true, breakLine: i < col.items.length - 1, paraSpaceAfter: 6 }
         })),
         {
-          x: x + 0.12, y: startY + headerH + 0.1, w: colW - 0.24, h: bodyH - 0.2,
+          x: x + 0.12, y: startY + headerH + 0.1, w: colW - 0.24,
           fontSize: 12, fontFace: 'Calibri', color: t.body_light, valign: 'top'
         }
       );
@@ -1546,16 +1519,18 @@ async function renderClientLogos(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
+    fontSize: 26, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink', autoFit: true
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.08, w: 9, h: 0.3,
+      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
       fontSize: 13, fontFace: 'Calibri', italic: true,
-      color: t.secondary, align: 'left', margin: 0
+      color: t.secondary, align: 'left', margin: 0,
+      valign: 'top', fit: 'shrink', autoFit: true
     });
   }
 
@@ -1676,13 +1651,20 @@ async function build(deckSpec, outputPath) {
   defineSlidesMasters(pres, theme, brand);
 
   for (const slideSpec of deckSpec.slides) {
-    const masterName = slideSpec.is_dark_slide ? 'DARK_MASTER' : 'LIGHT_MASTER';
+    // Force DARK_MASTER for inherently dark layouts
+    const isInherentlyDark = slideSpec.layout === 'section_header' || slideSpec.layout === 'cta_dark' || slideSpec.layout === 'cover';
+    const masterName = (slideSpec.is_dark_slide || isInherentlyDark) ? 'DARK_MASTER' : 'LIGHT_MASTER';
     const slide = pres.addSlide({ masterName });
 
+    const slideW = isQuarksTheme ? 10 : 13.33;
     const enriched = {
       ...slideSpec,
+      is_dark_slide: slideSpec.is_dark_slide || isInherentlyDark,
       theme,
+      brand,
       client_name: deckSpec.client_name,
+      slideW,
+      slideH: isQuarksTheme ? 5.625 : 7.5,
     };
 
     const renderer = LAYOUT_MAP[slideSpec.layout] || renderBulletsWithIcons;

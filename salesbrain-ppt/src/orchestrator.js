@@ -76,7 +76,7 @@ STAGE 5 — HOW WE WORK (1-2 slides)
 
 STAGE 6 — CLOSE (always 2 slides)
 - section_header → always 1 slide, dark, title = "Where We Go From Here"
-- cta           → always 1 slide, dark
+- cta           → always 1 slide, dark\\
 
 ## SECTION HEADERS — insert between stages dynamically:
 - Add section_header dark slide at the START of stage 2, 3, 4, 5

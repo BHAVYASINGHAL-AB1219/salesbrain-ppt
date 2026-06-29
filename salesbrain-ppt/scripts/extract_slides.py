@@ -88,6 +88,64 @@ def get_max_font_size(shape):
     return max_size
 
 
+def get_raw_text(shape):
+    """Get the full raw text of a shape (concatenated paragraphs)."""
+    if not shape.has_text_frame:
+        return ""
+    return "\n".join(para.text for para in shape.text_frame.paragraphs if para.text)
+
+
+def get_font_name(shape):
+    """Get the primary font name used in a shape (first run that has one)."""
+    if not shape.has_text_frame:
+        return None
+    for para in shape.text_frame.paragraphs:
+        for run in para.runs:
+            if run.font.name:
+                return run.font.name
+    return None
+
+
+def get_font_color(shape):
+    """Get the primary font colour as a hex string (first run that has one)."""
+    if not shape.has_text_frame:
+        return None
+    try:
+        for para in shape.text_frame.paragraphs:
+            for run in para.runs:
+                c = run.font.color
+                if c and c.type is not None:
+                    rgb = c.rgb
+                    return str(rgb)  # e.g. "1F3A5F"
+    except Exception:
+        pass
+    return None
+
+
+def get_fill_color(shape):
+    """Get the shape fill colour as a hex string."""
+    try:
+        fill = shape.fill
+        if fill.type is not None and hasattr(fill, 'fore_color'):
+            return str(fill.fore_color.rgb)
+    except Exception:
+        pass
+    return None
+
+
+def get_is_bold(shape):
+    """Return True if the first run in the text frame is bold."""
+    if not shape.has_text_frame:
+        return False
+    try:
+        for para in shape.text_frame.paragraphs:
+            for run in para.runs:
+                return bool(run.font.bold)
+    except Exception:
+        pass
+    return False
+
+
 def get_text_length(shape):
     """Get total character count of visible text in a shape."""
     if not shape.has_text_frame:
@@ -109,22 +167,27 @@ def get_autosize_mode(shape):
 
 
 def extract_shape_geometry(shape, shape_index):
-    """Extract position and size geometry for a shape."""
+    """Extract position, size, font, colour geometry for a shape."""
     return {
-        "shape_index": shape_index,
-        "shape_type": get_shape_type_name(shape),
-        "left": emu_to_inches(shape.left),
-        "top": emu_to_inches(shape.top),
-        "width": emu_to_inches(shape.width),
-        "height": emu_to_inches(shape.height),
-        "right": emu_to_inches(shape.left + shape.width) if shape.left is not None and shape.width is not None else 0,
-        "bottom": emu_to_inches(shape.top + shape.height) if shape.top is not None and shape.height is not None else 0,
+        "shape_index":    shape_index,
+        "shape_type":     get_shape_type_name(shape),
+        "left":           emu_to_inches(shape.left),
+        "top":            emu_to_inches(shape.top),
+        "width":          emu_to_inches(shape.width),
+        "height":         emu_to_inches(shape.height),
+        "right":          emu_to_inches(shape.left + shape.width)  if shape.left is not None and shape.width  is not None else 0,
+        "bottom":         emu_to_inches(shape.top  + shape.height) if shape.top  is not None and shape.height is not None else 0,
         "has_text_frame": shape.has_text_frame,
-        "text_length": get_text_length(shape),
-        "font_size_min": get_min_font_size(shape),
-        "font_size_max": get_max_font_size(shape),
-        "autosize_mode": get_autosize_mode(shape),
-        "name": shape.name or f"Shape_{shape_index}",
+        "text_length":    get_text_length(shape),
+        "raw_text":       get_raw_text(shape),
+        "font_size_min":  get_min_font_size(shape),
+        "font_size_max":  get_max_font_size(shape),
+        "font_name":      get_font_name(shape),
+        "font_color":     get_font_color(shape),
+        "fill_color":     get_fill_color(shape),
+        "is_bold":        get_is_bold(shape),
+        "autosize_mode":  get_autosize_mode(shape),
+        "name":           shape.name or f"Shape_{shape_index}",
     }
 
 
