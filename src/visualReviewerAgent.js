@@ -21,6 +21,8 @@ const fs = require('fs');
 const Anthropic = require('@anthropic-ai/sdk');
 const { parseLLMResponse } = require('./utils/llmUtils');
 
+const tokenTracker = require('./utils/tokenTracker');
+
 const claude = new Anthropic({
   apiKey: process.env.LITELLM_API_KEY || 'dummy',
   baseURL: process.env.LITELLM_BASE_URL || 'http://localhost:4000'
@@ -181,6 +183,8 @@ Schema:
         }
       ]
     });
+
+    tokenTracker.record('visual_review', VISION_MODEL, response.usage, `slide ${slideNumber}`);
 
     const result = parseLLMResponse(response);
 

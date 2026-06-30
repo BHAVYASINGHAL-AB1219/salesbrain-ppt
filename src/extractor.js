@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { parseLLMResponse } = require('./utils/llmUtils');
+const tokenTracker = require('./utils/tokenTracker');
 
 const claude = new Anthropic({
   apiKey: process.env.LITELLM_API_KEY || 'dummy',
@@ -42,6 +43,7 @@ Schema:
     ]
   });
 
+  tokenTracker.record('extraction', CONTENT_MODEL, response.usage, 'payload extraction');
   console.log("LLM RESPONSE:", JSON.stringify(response, null, 2));
 
   try {

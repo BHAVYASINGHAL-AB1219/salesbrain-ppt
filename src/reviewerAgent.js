@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { parseLLMResponse } = require('./utils/llmUtils');
+const tokenTracker = require('./utils/tokenTracker');
 const { execSync } = require('child_process');
 const path = require('path');
 
@@ -131,6 +132,8 @@ Review each slide. Be strict about fabricated statistics and generic text that d
       }
     ]
   });
+
+  tokenTracker.record('content_review', REVIEWER_MODEL, response.usage, 'content review');
 
   try {
     const reviewResult = parseLLMResponse(response);

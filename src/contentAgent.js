@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { parseLLMResponse } = require('./utils/llmUtils');
+const tokenTracker = require('./utils/tokenTracker');
 
 const claude = new Anthropic({
   apiKey: process.env.LITELLM_API_KEY || 'dummy',
@@ -146,6 +147,13 @@ You MUST fix the issues described above. Do NOT repeat the same mistakes. Be spe
       }
     ]
   });
+
+  tokenTracker.record(
+    reviewFeedback ? 'regeneration' : 'content_generation',
+    CONTENT_MODEL,
+    response.usage,
+    `slide ${slideIndex + 1}`
+  );
 
   try {
     return parseLLMResponse(response);

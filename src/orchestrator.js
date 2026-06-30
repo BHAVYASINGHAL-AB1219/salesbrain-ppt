@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { parseLLMResponse } = require('./utils/llmUtils');
+const tokenTracker = require('./utils/tokenTracker');
 const contentAgent = require('./contentAgent');
 const designAgent = require('./designAgent');
 const validator = require('./validator');
@@ -48,6 +49,7 @@ function buildNarrativeContext(plan, slideIndex) {
  */
 async function run(payload, jobId) {
   console.log(`[${jobId}] Orchestrator: planning deck structure...`);
+  tokenTracker.reset();
   const matchedCapabilities = matchCapabilities(payload, 6);
 
   // ── Phase 1: Claude decides the slide plan ──────────────────────────────────
@@ -254,6 +256,7 @@ Schema:
         ]
       });
 
+      tokenTracker.record('planning', CONTENT_MODEL, planResponse.usage, 'deck plan');
       plan = parseLLMResponse(planResponse);
 
       // Validate slide count is within bounds

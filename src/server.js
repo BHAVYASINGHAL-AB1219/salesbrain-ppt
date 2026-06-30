@@ -12,6 +12,7 @@ const visualReviewerAgent = require('./visualReviewerAgent');
 const contentAgent = require('./contentAgent');
 const designAgent = require('./designAgent');
 const validator = require('./validator');
+const tokenTracker = require('./utils/tokenTracker');
 
 const app = express();
 app.use(cors());
@@ -232,6 +233,9 @@ app.post('/build-deck', async (req, res) => {
     }
 
     console.log(`[${jobId}] Done → ${finalPath} (review ${reviewPassed ? 'PASSED' : 'used best effort'})`);
+
+    // Log token usage summary
+    console.log(tokenTracker.getSummary(jobId));
 
     const filename = path.basename(finalPath);
     res.json({ success: true, downloadUrl: `/download/${filename}` });
