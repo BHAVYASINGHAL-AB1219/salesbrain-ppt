@@ -62,6 +62,7 @@ Client context:
 - Pain points: ${(payload.client?.pain_points || []).join(', ')}
 
 Our company:
+- Name: ${payload.our_company?.name || 'Our Company'}
 - Key differentiators: ${(payload.our_company?.differentiators || []).join(', ')}
 - Relevant products: ${(payload.our_company?.products || []).slice(0, 5).join(', ')}
 - Case study available: ${payload.our_company?.case_studies?.[0]?.title || 'none'}
@@ -69,6 +70,20 @@ Our company:
 Alignment score: ${payload.alignment_score}%
 Recommended angle: ${payload.recommended_angle}
 
+SLIDE-TYPE SPECIFIC RULES:
+${slidePlan.slide_type === 'cta' ? `
+- This is the CLOSING slide (Call To Action). It must feel like a powerful, memorable ending.
+- "title" should be a compelling CTA headline (e.g. "Let's Transform ${payload.client?.name || 'Your Business'} Together")
+- "subtitle" should be a second line that reinforces urgency or partnership (e.g. "Your AI & Cloud roadmap starts here")
+- Do NOT use generic text. Make it specific to the client and their pain points.
+- "bullets" are NOT shown — leave as empty array.
+` : ''}${slidePlan.slide_type === 'cover' ? `
+- "title" is the deck title — make it about the CLIENT, not about us.
+- "subtitle" should mention both our company and the client.
+` : ''}${slidePlan.slide_type === 'section_header' ? `
+- "title" should be provocative/client-specific, not generic like "Our Approach".
+- "subtitle" is optional — one sentence of context if needed.
+` : ''}
 Return JSON:
 {
   "title": "...",

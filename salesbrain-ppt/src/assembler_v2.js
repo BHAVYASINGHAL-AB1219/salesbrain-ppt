@@ -582,24 +582,24 @@ async function renderBulletsWithIcons(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
+      x: 0.5, y: 1.5, w: (spec.slideW || 13.33) - 1.0, h: 0.35,
       fontSize: 13, fontFace: 'Calibri', italic: true,
       color: t.secondary, align: 'left', margin: 0,
-      valign: 'top', fit: 'shrink', autoFit: true
+      valign: 'top', fit: 'shrink'
     });
   }
 
   const bullets = (spec.bullets || []).slice(0, 6);
   const count = bullets.length;
-  const startY = spec.subtitle ? 1.5 : 1.3;
+  const startY = spec.subtitle ? 1.95 : 1.55;
 
   // Determine grid layout
   let cols, rows;
@@ -681,23 +681,24 @@ async function renderSplitTwoCol(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink'
   });
 
   // Left: bullets with accent-bar card
   const bullets = (spec.bullets || []).slice(0, 4);
   if (bullets.length) {
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 0.5, y: 1.35, w: 4.5, h: 3.3,
+      x: 0.5, y: 1.55, w: 4.5, h: 3.1,
       fill: { color: t.card_bg },
       shadow: makeShadow(0.06),
       line: { color: t.card_bg, width: 0 }
     });
     // Accent left bar
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 0.5, y: 1.35, w: 0.06, h: 3.3,
+      x: 0.5, y: 1.55, w: 0.06, h: 3.1,
       fill: { color: t.primary },
       line: { color: t.primary, width: 0 }
     });
@@ -708,7 +709,7 @@ async function renderSplitTwoCol(slide, spec, pres) {
         options: { bullet: true, breakLine: i < bullets.length - 1, paraSpaceAfter: 10 }
       })),
       {
-        x: 0.75, y: 1.5, w: 4.1, h: 3.0,
+        x: 0.75, y: 1.7, w: 4.1, h: 2.8,
         fontSize: 15, fontFace: 'Calibri', color: t.body_light, valign: 'top'
       }
     );
@@ -717,7 +718,7 @@ async function renderSplitTwoCol(slide, spec, pres) {
   // Right: stat callout card
   if (spec.stat_callout) {
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 5.3, y: 1.35, w: 4.2, h: 3.3,
+      x: 5.3, y: 1.55, w: 4.2, h: 3.1,
       fill: { color: t.card_bg },
       shadow: makeShadow(0.06),
       line: { color: t.card_bg, width: 0 }
@@ -730,29 +731,29 @@ async function renderSplitTwoCol(slide, spec, pres) {
     });
 
     slide.addText(spec.stat_callout.number, {
-      x: 5.3, y: 1.8, w: 4.2, h: 1.4,
+      x: 5.3, y: 2.0, w: 4.2, h: 1.4,
       fontSize: 56, fontFace: 'Cambria', bold: true,
       color: t.primary, align: 'center', valign: 'middle', margin: 0
     });
     slide.addText(spec.stat_callout.label, {
-      x: 5.3, y: 3.3, w: 4.2, h: 0.5,
+      x: 5.3, y: 3.5, w: 4.2, h: 0.5,
       fontSize: 13, fontFace: 'Calibri',
       color: t.body_light, align: 'center', margin: 0
     });
   } else if (spec.subtitle) {
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 5.3, y: 1.35, w: 4.2, h: 3.3,
+      x: 5.3, y: 1.55, w: 4.2, h: 3.1,
       fill: { color: t.card_bg },
       shadow: makeShadow(0.06),
       line: { color: t.card_bg, width: 0 }
     });
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 5.3, y: 1.35, w: 4.2, h: 0.06,
+      x: 5.3, y: 1.55, w: 4.2, h: 0.06,
       fill: { color: t.accent },
       line: { color: t.accent, width: 0 }
     });
     slide.addText(spec.subtitle, {
-      x: 5.5, y: 1.6, w: 3.8, h: 2.8,
+      x: 5.5, y: 1.8, w: 3.8, h: 2.6,
       fontSize: 15, fontFace: 'Calibri', italic: true,
       color: t.body_light, valign: 'middle', margin: 0
     });
@@ -772,9 +773,10 @@ async function renderComparison(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 9, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink'
   });
 
   const half = Math.ceil((spec.bullets || []).length / 2);
@@ -783,18 +785,18 @@ async function renderComparison(slide, spec, pres) {
 
   // Left column
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.3, w: 4.1, h: 0.52,
+    x: 0.5, y: 1.55, w: 4.1, h: 0.52,
     fill: { color: t.secondary },
     line: { color: t.secondary, width: 0 }
   });
   slide.addText('Current Situation', {
-    x: 0.5, y: 1.3, w: 4.1, h: 0.52,
+    x: 0.5, y: 1.55, w: 4.1, h: 0.52,
     fontSize: 13, fontFace: 'Calibri', bold: true,
     color: 'FFFFFF', align: 'center', valign: 'middle', margin: 0
   });
 
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.9, w: 4.1, h: 2.8,
+    x: 0.5, y: 2.15, w: 4.1, h: 2.55,
     fill: { color: t.card_bg },
     shadow: makeShadow(0.06),
     line: { color: t.card_bg, width: 0 }
@@ -802,24 +804,24 @@ async function renderComparison(slide, spec, pres) {
   if (left.length) {
     slide.addText(
       left.map((b, i) => ({ text: b, options: { bullet: true, breakLine: i < left.length - 1, paraSpaceAfter: 8 } })),
-      { x: 0.7, y: 2.0, w: 3.7, h: 2.6, fontSize: 14, fontFace: 'Calibri', color: t.body_light, valign: 'top' }
+      { x: 0.7, y: 2.25, w: 3.7, h: 2.35, fontSize: 14, fontFace: 'Calibri', color: t.body_light, valign: 'top' }
     );
   }
 
   // Right column
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 5.4, y: 1.3, w: 4.1, h: 0.52,
+    x: 5.4, y: 1.55, w: 4.1, h: 0.52,
     fill: { color: t.primary },
     line: { color: t.primary, width: 0 }
   });
   slide.addText('With Our Solution', {
-    x: 5.4, y: 1.3, w: 4.1, h: 0.52,
+    x: 5.4, y: 1.55, w: 4.1, h: 0.52,
     fontSize: 13, fontFace: 'Calibri', bold: true,
     color: 'FFFFFF', align: 'center', valign: 'middle', margin: 0
   });
 
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 5.4, y: 1.9, w: 4.1, h: 2.8,
+    x: 5.4, y: 2.15, w: 4.1, h: 2.55,
     fill: { color: t.card_bg },
     shadow: makeShadow(0.06),
     line: { color: t.card_bg, width: 0 }
@@ -827,7 +829,7 @@ async function renderComparison(slide, spec, pres) {
   if (right.length) {
     slide.addText(
       right.map((b, i) => ({ text: b, options: { bullet: true, breakLine: i < right.length - 1, paraSpaceAfter: 8 } })),
-      { x: 5.6, y: 2.0, w: 3.7, h: 2.6, fontSize: 14, fontFace: 'Calibri', color: t.body_light, valign: 'top' }
+      { x: 5.6, y: 2.25, w: 3.7, h: 2.35, fontSize: 14, fontFace: 'Calibri', color: t.body_light, valign: 'top' }
     );
   }
 
@@ -845,9 +847,10 @@ async function renderDataChart(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: isQuarks ? 0.65 : 0.5, w: 7, h: 0.55,
-    fontSize: 28, fontFace: 'Cambria', bold: true,
-    color: t.title_light, align: 'left', margin: 0
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 4.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
+    color: t.title_light, align: 'left', margin: 0,
+    valign: 'top', fit: 'shrink'
   });
 
   // Stat callout — top right
@@ -894,7 +897,7 @@ async function renderDataChart(slide, spec, pres) {
       spec.bullets.map((b, i) => ({
         text: b, options: { bullet: true, breakLine: i < spec.bullets.length - 1, paraSpaceAfter: 10 }
       })),
-      { x: 0.5, y: 1.6, w: 9, h: 3.1, fontSize: 16, fontFace: 'Calibri', color: t.body_light }
+      { x: 0.5, y: 1.8, w: 9, h: 2.9, fontSize: 16, fontFace: 'Calibri', color: t.body_light }
     );
   }
 
@@ -911,22 +914,22 @@ async function renderCaseStudy(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   const totalW = (spec.slideW || 13.33) - 1.0;
   // Quote card with accent top bar
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.3, w: totalW, h: 1.55,
+    x: 0.5, y: 1.55, w: totalW, h: 1.35,
     fill: { color: t.card_bg },
     shadow: makeShadow(0.07),
     line: { color: t.card_bg, width: 0 }
   });
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.5, y: 1.3, w: totalW, h: 0.06,
+    x: 0.5, y: 1.55, w: totalW, h: 0.06,
     fill: { color: t.accent },
     line: { color: t.accent, width: 0 }
   });
@@ -934,7 +937,7 @@ async function renderCaseStudy(slide, spec, pres) {
   slide.addText([
     { text: `"${spec.subtitle || 'Client outcome'}"`, options: { italic: true, color: t.title_light, fontSize: 15 } }
   ], {
-    x: 0.75, y: 1.4, w: totalW - 0.5, h: 1.35,
+    x: 0.75, y: 1.65, w: totalW - 0.5, h: 1.15,
     fontFace: 'Cambria', valign: 'middle'
   });
 
@@ -943,8 +946,8 @@ async function renderCaseStudy(slide, spec, pres) {
   const gapX = 0.4;
   const cardW = (totalW - gapX) / 2;
   const positions = [
-    [0.5, 2.95], [0.5 + cardW + gapX, 2.95],
-    [0.5, 3.93], [0.5 + cardW + gapX, 3.93]
+    [0.5, 3.05], [0.5 + cardW + gapX, 3.05],
+    [0.5, 3.95], [0.5 + cardW + gapX, 3.95]
   ];
   for (let i = 0; i < Math.min(bullets.length, 4); i++) {
     const [x, y] = positions[i];
@@ -1006,25 +1009,30 @@ async function renderCTA(slide, spec, pres) {
   const textX = 0.5;
   const textW = slideW - 1.0;
 
-  // Line 1 — white
-  slide.addText(spec.title || "Let's Build Something", {
-    x: textX, y: 1.3, w: textW, h: 0.9,
-    fontSize: 36, fontFace: fonts(spec).title, bold: true,
+  // Line 1 — white (with shrink to prevent wrapping overflow)
+  const ctaTitle = spec.title || `Let's Transform ${spec.client_name || 'Your Business'}`;
+  slide.addText(ctaTitle, {
+    x: textX, y: 1.0, w: textW, h: 0.8,
+    fontSize: 32, fontFace: fonts(spec).title, bold: true,
     color: t.title_dark,
-    align: 'center', valign: 'middle', margin: 0
+    align: 'center', valign: 'middle', margin: 0,
+    fit: 'shrink'
   });
   // Line 2 — cyan (the "Extraordinary Together" effect)
-  slide.addText(spec.subtitle || 'Extraordinary Together', {
-    x: textX, y: 2.2, w: textW, h: 0.9,
-    fontSize: 36, fontFace: fonts(spec).title, bold: true,
-    color: t.secondary,              // different color from line 1
-    align: 'center', valign: 'middle', margin: 0
+  const ctaSubtitle = spec.subtitle || 'Your roadmap starts here';
+  slide.addText(ctaSubtitle, {
+    x: textX, y: 1.9, w: textW, h: 0.8,
+    fontSize: 32, fontFace: fonts(spec).title, bold: true,
+    color: t.secondary,
+    align: 'center', valign: 'middle', margin: 0,
+    fit: 'shrink'
   });
 
   // Tagline — italic, sits below the two headlines
-  slide.addText('Revolutionizing Future Digitally', {
-    x: textX, y: 3.2, w: textW, h: 0.4,
-    fontSize: 15, fontFace: fonts(spec).body,
+  const tagline = spec.brand?.tagline || 'Revolutionizing Future Digitally';
+  slide.addText(tagline, {
+    x: textX, y: 2.85, w: textW, h: 0.35,
+    fontSize: 14, fontFace: fonts(spec).body,
     color: t.body_dark,
     align: 'center', italic: true, margin: 0
   });
@@ -1035,15 +1043,15 @@ async function renderCTA(slide, spec, pres) {
   const startX = (slideW - (btnW * 2 + gap)) / 2;
 
   // Button 1 — left
-  slide.addShape(pres.shapes.RECTANGLE, {   // flat rect NOT rounded
-    x: startX, y: 3.9, w: btnW, h: 0.8,
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: startX, y: 3.4, w: btnW, h: 0.7,
     fill: { color: t.primary },
     line: { type: 'none' }
   });
 
   const btn1Text = (spec.brand?.website ? `Visit: www.${spec.brand.website.replace(/^https?:\/\/(www\.)?/, '')}` : spec.bullets?.[0]) || 'Visit: www.qtsolv.com';
   slide.addText(btn1Text, {
-    x: startX, y: 3.9, w: btnW, h: 0.8,
+    x: startX, y: 3.4, w: btnW, h: 0.7,
     fontSize: 13, fontFace: fonts(spec).title, bold: true,
     color: t.title_dark,
     align: 'center', valign: 'middle', margin: 0
@@ -1051,36 +1059,26 @@ async function renderCTA(slide, spec, pres) {
 
   // Button 2 — right
   slide.addShape(pres.shapes.RECTANGLE, {
-    x: startX + btnW + gap, y: 3.9, w: btnW, h: 0.8,
+    x: startX + btnW + gap, y: 3.4, w: btnW, h: 0.7,
     fill: { color: t.primary },
     line: { type: 'none' }
   });
 
   const btn2Text = (spec.brand?.contact_email ? `Email: ${spec.brand.contact_email}` : spec.bullets?.[1]) || 'Email: contact@qtsolv.com';
   slide.addText(btn2Text, {
-    x: startX + btnW + gap, y: 3.9, w: btnW, h: 0.8,
+    x: startX + btnW + gap, y: 3.4, w: btnW, h: 0.7,
     fontSize: 13, fontFace: fonts(spec).title, bold: true,
     color: t.title_dark,
     align: 'center', valign: 'middle', margin: 0
   });
 
-  // Footer rows — offices and certifications
+  // Footer — company name only (master template already adds website & slide number)
   const footer1 = spec.brand?.company_name || spec.bullets?.[2];
   if (footer1) {
     slide.addText(footer1, {
-      x: textX, y: 4.85, w: textW, h: 0.35,
+      x: textX, y: 4.3, w: textW, h: 0.3,
       fontSize: 12, fontFace: fonts(spec).body,
       color: t.body_dark,
-      align: 'center', margin: 0
-    });
-  }
-
-  const footer2 = spec.brand?.tagline || spec.bullets?.[3];
-  if (footer2) {
-    slide.addText(footer2, {
-      x: textX, y: 5.25, w: textW, h: 0.35,
-      fontSize: 11, fontFace: fonts(spec).body,
-      color: '5A6A85',
       align: 'center', margin: 0
     });
   }
@@ -1098,18 +1096,18 @@ async function renderAgenda(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
+      x: 0.5, y: 1.5, w: (spec.slideW || 13.33) - 1.0, h: 0.35,
       fontSize: 13, fontFace: 'Calibri', italic: true,
       color: t.secondary, align: 'left', margin: 0,
-      valign: 'top', fit: 'shrink', autoFit: true
+      valign: 'top', fit: 'shrink'
     });
   }
 
@@ -1117,7 +1115,7 @@ async function renderAgenda(slide, spec, pres) {
   const col2Start = Math.ceil(items.length / 2);
   const leftItems = items.slice(0, col2Start);
   const rightItems = items.slice(col2Start);
-  const startY = spec.subtitle ? 1.55 : 1.3;
+  const startY = spec.subtitle ? 1.95 : 1.55;
 
   const totalW = (spec.slideW || 13.33) - 1.0;
   const gapX = 0.5;
@@ -1173,18 +1171,18 @@ async function renderPricing(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
+      x: 0.5, y: 1.5, w: (spec.slideW || 13.33) - 1.0, h: 0.35,
       fontSize: 13, fontFace: 'Calibri', italic: true,
       color: t.secondary, align: 'left', margin: 0,
-      valign: 'top', fit: 'shrink', autoFit: true
+      valign: 'top', fit: 'shrink'
     });
   }
 
@@ -1265,7 +1263,7 @@ async function renderCardsGrid(slide, spec, pres) {
 
   const bullets = (spec.bullets || []).slice(0, 12);
   const count = bullets.length;
-  const startY = spec.subtitle ? 1.45 : 1.25;
+  const startY = spec.subtitle ? 1.95 : 1.55;
 
   // ── Grid layout dimensions ───────────────────────────────────────
   let cols, rows;
@@ -1399,18 +1397,18 @@ async function renderThreeColumn(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
+      x: 0.5, y: 1.5, w: (spec.slideW || 13.33) - 1.0, h: 0.35,
       fontSize: 13, fontFace: 'Calibri', italic: true,
       color: t.secondary, align: 'left', margin: 0,
-      valign: 'top', fit: 'shrink', autoFit: true
+      valign: 'top', fit: 'shrink'
     });
   }
 
@@ -1447,11 +1445,11 @@ async function renderThreeColumn(slide, spec, pres) {
     columns.push({ header: `Model ${columns.length + 1}`, items: ['Details coming soon'] });
   }
 
-  const startY = spec.subtitle ? 1.5 : 1.3;
+  const startY = spec.subtitle ? 1.95 : 1.55;
   const gap = 0.22;
   const colW = ((spec.slideW || 13.33) - 1.0 - (gap * 2)) / 3;
   const headerH = 0.5;
-  const bodyH = 3.1;
+  const bodyH = 2.4;
   const isLightAccent = parseInt(t.accent, 16) > 0xAAAAAA;
   const colors = [t.secondary, t.primary, isLightAccent ? t.dark_bg : t.accent];
 
@@ -1519,24 +1517,24 @@ async function renderClientLogos(slide, spec, pres) {
   addEyebrow(slide, spec, pres);
 
   slide.addText(spec.title, {
-    x: 0.5, y: 0.65, w: (spec.slideW || 13.33) - 1.0, h: 0.55,
-    fontSize: 26, fontFace: 'Cambria', bold: true,
+    x: 0.5, y: 0.6, w: (spec.slideW || 13.33) - 1.0, h: 0.85,
+    fontSize: 22, fontFace: 'Cambria', bold: true,
     color: t.title_light, align: 'left', margin: 0,
-    valign: 'top', fit: 'shrink', autoFit: true
+    valign: 'top', fit: 'shrink'
   });
 
   if (spec.subtitle) {
     slide.addText(spec.subtitle, {
-      x: 0.5, y: 1.23, w: (spec.slideW || 13.33) - 1.0, h: 0.3,
+      x: 0.5, y: 1.5, w: (spec.slideW || 13.33) - 1.0, h: 0.35,
       fontSize: 13, fontFace: 'Calibri', italic: true,
       color: t.secondary, align: 'left', margin: 0,
-      valign: 'top', fit: 'shrink', autoFit: true
+      valign: 'top', fit: 'shrink'
     });
   }
 
   const clients = (spec.bullets || []).slice(0, 20);
   const count = clients.length;
-  const startY = spec.subtitle ? 1.55 : 1.35;
+  const startY = spec.subtitle ? 1.95 : 1.55;
 
   // Auto grid: 4 or 5 columns
   const cols = count > 12 ? 5 : 4;
