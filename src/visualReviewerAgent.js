@@ -132,7 +132,9 @@ async function reviewSlideWithVision(imagePath, slideNumber, slideType) {
     const response = await claude.messages.create({
       model: VISION_MODEL,
       max_tokens: 8192,
-      system: `You are an expert presentation design reviewer. You are examining a screenshot of a single slide from a sales presentation.
+      system: [{
+        type: 'text',
+        text: `You are an expert presentation design reviewer. You are examining a screenshot of a single slide from a sales presentation.
 
 Score these visual aspects (each 1-10):
 - LAYOUT_BALANCE: Is content well-distributed across the slide? No awkward empty spaces or cramped areas?
@@ -163,6 +165,8 @@ Schema:
   "visual_issues": ["issue description 1", "issue description 2"],
   "visual_feedback": "Specific actionable feedback for improving this slide's visual design"
 }`,
+        cache_control: { type: 'ephemeral' }
+      }],
       messages: [
         {
           role: 'user',

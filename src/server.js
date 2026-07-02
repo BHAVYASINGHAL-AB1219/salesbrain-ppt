@@ -234,8 +234,11 @@ app.post('/build-deck', async (req, res) => {
 
     console.log(`[${jobId}] Done → ${finalPath} (review ${reviewPassed ? 'PASSED' : 'used best effort'})`);
 
-    // Log token usage summary
+    // Log token usage summary (aggregated by phase + model)
     console.log(tokenTracker.getSummary(jobId));
+
+    // Log detailed per-call breakdown (every LLM call with cost)
+    console.log(tokenTracker.getDetailedSummary(jobId));
 
     const filename = path.basename(finalPath);
     res.json({ success: true, downloadUrl: `/download/${filename}` });

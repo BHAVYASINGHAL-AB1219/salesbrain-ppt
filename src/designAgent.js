@@ -117,26 +117,32 @@ const COLOR_THEMES = {
   },
 };
 
-// ─── Layout rules — slide_type → layout name used by assembler ───────────────
-const LAYOUT_RULES = {
-  cover: 'cover_layout',
-  agenda: 'agenda',
-  problem: 'split_two_column',
-  solution: 'split_two_column',
-  comparison: 'comparison_columns',
-  data: 'data_callout_chart',
-  case_study: 'case_study_layout',
-  team: 'cards_grid',
-  pricing: 'pricing_table',
-  cta: 'cta_dark',
-  section_header: 'section_header_dark',
-  // New layout types
-  services_grid: 'cards_grid',
-  tech_stack: 'cards_grid',
-  client_wall: 'client_logos',
-  engagement_models: 'three_column',
-  global_presence: 'cards_grid',
+// ─── Layout options — slide_type → array of valid layouts (first = default) ──
+// The orchestrator LLM picks a layout; this validates it and falls back to default.
+const LAYOUT_OPTIONS = {
+  cover:              ['cover_layout'],
+  agenda:             ['agenda'],
+  section_header:     ['section_header_dark'],
+  cta:                ['cta_dark'],
+  pricing:            ['pricing_table'],
+  client_wall:        ['client_logos'],
+  data:               ['data_callout_chart'],
+  problem:            ['split_two_column', 'comparison_columns', 'bullets_with_icon'],
+  solution:           ['split_two_column', 'cards_grid', 'bullets_with_icon', 'three_column'],
+  services_grid:      ['cards_grid', 'bullets_with_icon'],
+  tech_stack:         ['cards_grid', 'bullets_with_icon'],
+  comparison:         ['comparison_columns', 'split_two_column'],
+  case_study:         ['case_study_layout', 'split_two_column'],
+  engagement_models:  ['three_column', 'cards_grid'],
+  team:               ['cards_grid', 'bullets_with_icon'],
+  global_presence:    ['cards_grid'],
 };
+
+// Backward-compatible alias for code that still references LAYOUT_RULES
+const LAYOUT_RULES = {};
+for (const [type, options] of Object.entries(LAYOUT_OPTIONS)) {
+  LAYOUT_RULES[type] = options[0];
+}
 
 // ─── Dark slide types — drives DARK_MASTER selection in assembler ─────────────
 const DARK_SLIDE_TYPES = new Set(['cover', 'cta', 'section_header']);
@@ -149,7 +155,14 @@ async function assign(slidePlan, colorTheme, slideIndex, totalSlides) {
   const theme = COLOR_THEMES[colorTheme] || COLOR_THEMES.midnight_executive;
 
   const isDark = DARK_SLIDE_TYPES.has(slidePlan.slide_type) || slidePlan.visual_tone === 'dark';
-  const layout = LAYOUT_RULES[slidePlan.slide_type] || 'bullets_with_icon';
+
+  // Validate the orchestrator's layout choice against valid options for this slide_type.
+  // Falls back to the default (first option) if the LLM didn't pick one or picked an invalid one.
+  const validLayouts = LAYOUT_OPTIONS[slidePlan.slide_type] || ['bullets_with_icon'];
+  const requestedLayout = slidePlan.layout;
+  const layout = (requestedLayout && validLayouts.includes(requestedLayout))
+    ? requestedLayout
+    : validLayouts[0];
 
   return {
     layout,
@@ -161,4 +174,4 @@ async function assign(slidePlan, colorTheme, slideIndex, totalSlides) {
   };
 }
 
-module.exports = { assign, COLOR_THEMES, LAYOUT_RULES };
+module.exports = { assign, COLOR_THEMES, LAYOUT_RULES, LAYOUT_OPTIONS };

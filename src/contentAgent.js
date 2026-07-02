@@ -24,7 +24,9 @@ async function generate(slidePlan, payload, slideIndex, reviewFeedback = null, n
   const response = await claude.messages.create({
     model: CONTENT_MODEL,
     max_tokens: 8192,
-    system: `You are a master sales copywriter who writes presentation slide content that reads as a single, compelling narrative — not a disconnected sequence of bullet points.
+    system: [{
+      type: 'text',
+      text: `You are a master sales copywriter who writes presentation slide content that reads as a single, compelling narrative — not a disconnected sequence of bullet points.
 
 IMPORTANT JSON RULES:
 - MUST wrap the JSON in \`\`\`json and \`\`\` fences.
@@ -67,10 +69,13 @@ STAY WITHIN THESE LIMITS. Be concise. Every word must earn its place.
 - stats_strip: ONLY for cover slide — array of 3-4 objects [{number: "17+", label: "Years"}, ...]
   number: max 10 chars, label: max 25 chars
   Pull real numbers from the payload (years of experience, client count, team size, etc.)`,
+      cache_control: { type: 'ephemeral' }
+    }],
     messages: [
       {
         role: 'user',
         content: `Slide ${slideIndex + 1} of ${narrativeContext?.slide_position?.split(' of ')[1] || '?'}: ${slidePlan.slide_type}
+Layout: ${slidePlan.layout || 'default'}
 Story stage: ${narrativeContext?.current_stage || 'unknown'}
 Purpose: ${slidePlan.purpose}
 Content brief: ${slidePlan.content_brief}
@@ -97,6 +102,33 @@ Our company:
 
 Alignment score: ${payload.alignment_score}%
 Recommended angle: ${payload.recommended_angle}
+
+LAYOUT-SPECIFIC CONTENT RULES (the layout field determines how content is rendered):
+${slidePlan.layout === 'comparison_columns' ? `
+- This layout splits bullets into TWO columns: "Current Situation" (left) vs "With Our Solution" (right).
+- Provide an EVEN number of bullets (4-6). First half = current pain, second half = our solution.
+- Each bullet should contrast with its counterpart in the other column.
+` : ''}${slidePlan.layout === 'three_column' ? `
+- This layout renders THREE columns with colored headers.
+- Provide EXACTLY 3 bullets in format "Header: point1 | point2 | point3"
+- Each bullet becomes one column. Header max 25 chars, each point max 30 chars.
+` : ''}${slidePlan.layout === 'cards_grid' ? `
+- This layout renders a grid of cards (6-9 items).
+- Each bullet should be "Title: short description" format. Title max 25 chars, description max 35 chars.
+- Provide 6-9 bullets for a full grid.
+` : ''}${slidePlan.layout === 'bullets_with_icon' ? `
+- This layout renders a simple vertical bullet list with icons.
+- Provide 3-5 concise bullets, each max 100 characters.
+- stat_callout is optional but recommended for visual balance.
+` : ''}${slidePlan.layout === 'split_two_column' ? `
+- This layout has bullets on the left and a large stat callout on the right.
+- Provide 3-5 bullets (max 100 chars each) and a stat_callout with a real number.
+` : ''}${slidePlan.layout === 'case_study_layout' ? `
+- This layout features a quote/subtitle, measurable result bullets, and a stat callout.
+- "subtitle" should be a powerful client quote.
+- bullets should be 3-4 specific, measurable results.
+- stat_callout should highlight the key outcome metric.
+` : ''}
 
 SLIDE-TYPE SPECIFIC RULES:
 ${slidePlan.slide_type === 'cta' ? `

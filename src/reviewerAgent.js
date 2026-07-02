@@ -60,7 +60,9 @@ async function review(extractedData, originalPayload, originalSlideSpecs) {
   const response = await claude.messages.create({
     model: REVIEWER_MODEL,
     max_tokens: 8192,
-    system: `You are a senior sales deck quality reviewer. You receive EXTRACTED TEXT from a real .pptx file (what the viewer actually sees) alongside the original client brief.
+    system: [{
+      type: 'text',
+      text: `You are a senior sales deck quality reviewer. You receive EXTRACTED TEXT from a real .pptx file (what the viewer actually sees) alongside the original client brief.
 
 Your job: Score each slide and identify issues. Be strict but fair.
 
@@ -107,6 +109,8 @@ Schema:
   "failed_count": 2,
   "deck_narrative_feedback": "Overall narrative is good but the transition from problem to solution is abrupt."
 }`,
+      cache_control: { type: 'ephemeral' }
+    }],
     messages: [
       {
         role: 'user',

@@ -37,7 +37,11 @@ Schema:
   const response = await claude.messages.create({
     model: EXTRACTOR_MODEL,
     max_tokens: 8192,
-    system: systemPrompt,
+    system: [{
+      type: 'text',
+      text: systemPrompt,
+      cache_control: { type: 'ephemeral' }
+    }],
     messages: [
       {
         role: 'user',

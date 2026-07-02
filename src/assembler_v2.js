@@ -487,7 +487,7 @@ async function renderCover(slide, spec, pres) {
 
   // Client pill badge
   if (spec.client_name) {
-    const pillY = stats.length >= 2 ? 4.35 : 4.1;
+    const pillY = stats.length >= 2 ? 4.6 : 4.1;
     slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
       x: 0.6, y: pillY, w: 3.2, h: 0.45,
       fill: { color: t.accent }, rectRadius: 0.08,

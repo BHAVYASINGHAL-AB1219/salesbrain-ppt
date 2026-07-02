@@ -47,6 +47,141 @@ function buildNarrativeContext(plan, slideIndex) {
 }
 
 /**
+ * Builds a hardcoded fallback deck plan when all LLM planning attempts fail.
+ * This ensures production never crashes — the deck may be less tailored but
+ * will still be structurally valid and presentable.
+ *
+ * @param {object} payload - The original sales brain payload
+ * @param {string[]} matchedCapabilities - Capabilities matched for this client
+ * @returns {object} A minimal but valid deck plan following the story arc
+ */
+function buildFallbackPlan(payload, matchedCapabilities) {
+  const clientName = payload.client?.name || 'Your Team';
+  const ourName = payload.our_company?.name || 'Quarks';
+  const goal = payload.deck_goal || 'partnership';
+
+  console.warn('[orchestrator] Using FALLBACK deck plan — LLM planning failed after 3 attempts');
+
+  const slides = [
+    {
+      slide_type: 'cover',
+      layout: 'cover',
+      narrative_stage: 'hook',
+      purpose: 'Open with a partnership framing between our company and the client.',
+      content_brief: `Partnership between ${ourName} and ${clientName}.`,
+      transition_hint: 'Set up the agenda as a roadmap of the conversation.',
+      has_chart: false,
+      visual_tone: 'dark',
+    },
+    {
+      slide_type: 'agenda',
+      layout: 'agenda',
+      narrative_stage: 'hook',
+      purpose: 'Give the client a roadmap of what we will cover.',
+      content_brief: 'Roadmap: where you are, what is changing, how we fit, proof, next steps.',
+      transition_hint: 'Bridge to the client\'s current situation.',
+      has_chart: false,
+      visual_tone: 'light',
+    },
+    {
+      slide_type: 'section_header',
+      layout: 'section_header',
+      narrative_stage: 'their_world',
+      purpose: 'Transition into the client\'s current world and challenges.',
+      content_brief: 'Section: Your Current Landscape.',
+      transition_hint: 'Lead into specific pain points.',
+      has_chart: false,
+      visual_tone: 'dark',
+    },
+    {
+      slide_type: 'problem',
+      layout: 'bullets_with_icon',
+      narrative_stage: 'their_world',
+      purpose: 'Articulate the key pain points the client is facing.',
+      content_brief: 'Top 3-4 pain points the client faces today. Include a stat on the cost of inaction.',
+      transition_hint: 'Bridge to why now is the time to act.',
+      has_chart: false,
+      visual_tone: 'light',
+    },
+    {
+      slide_type: 'section_header',
+      layout: 'section_header',
+      narrative_stage: 'turning_point',
+      purpose: 'Shift from problem to solution.',
+      content_brief: 'Section: The Path Forward.',
+      transition_hint: 'Introduce our approach.',
+      has_chart: false,
+      visual_tone: 'dark',
+    },
+    {
+      slide_type: 'solution',
+      layout: 'split_two_column',
+      narrative_stage: 'toolkit',
+      purpose: 'Present our approach to solving the client\'s problems.',
+      content_brief: 'Our approach: 3-4 key pillars of the solution. Include a stat on expected impact.',
+      transition_hint: 'Detail the specific capabilities we bring.',
+      has_chart: false,
+      visual_tone: 'light',
+    },
+    {
+      slide_type: 'services_grid',
+      layout: 'cards_grid',
+      narrative_stage: 'toolkit',
+      purpose: 'Showcase the specific capabilities matched to this client.',
+      content_brief: (matchedCapabilities.slice(0, 6).join('; ')) || 'Key capabilities tailored to your needs.',
+      transition_hint: 'Bridge to proof that this works.',
+      has_chart: false,
+      visual_tone: 'light',
+    },
+    {
+      slide_type: 'case_study',
+      layout: 'case_study_layout',
+      narrative_stage: 'proof',
+      purpose: 'Provide evidence that our approach delivers results.',
+      content_brief: 'A representative client success story with measurable outcome and a quote.',
+      transition_hint: 'Move to next steps.',
+      has_chart: false,
+      visual_tone: 'light',
+    },
+    {
+      slide_type: 'section_header',
+      layout: 'section_header',
+      narrative_stage: 'path_forward',
+      purpose: 'Transition to the call to action.',
+      content_brief: 'Section: Next Steps.',
+      transition_hint: 'Lead into the specific ask.',
+      has_chart: false,
+      visual_tone: 'dark',
+    },
+    {
+      slide_type: 'cta',
+      layout: 'cta',
+      narrative_stage: 'call',
+      purpose: 'Make a clear, single call to action.',
+      content_brief: `Let's schedule a follow-up to discuss the ${goal} in detail.`,
+      transition_hint: '',
+      has_chart: false,
+      visual_tone: 'dark',
+    },
+  ];
+
+  // Inject slide numbers and total count
+  slides.forEach((s, i) => {
+    s.slide_number = i + 1;
+    s.total_slides = slides.length;
+  });
+
+  return {
+    deck_thesis: `By partnering with ${ourName}, ${clientName} can accelerate their ${goal} outcomes.`,
+    narrative_summary: `Opens with a partnership framing, moves through the client's current challenges, presents our solution and capabilities, provides proof via a case study, and closes with a clear call to action.`,
+    slides,
+    deck_title: `${ourName} × ${clientName} | Strategic Partnership`,
+    theme_choice: 'golden_navy',
+    total_slides: slides.length,
+  };
+}
+
+/**
  * Main orchestration function.
  * Uses Claude to plan the deck, then delegates content + design to sub-agents.
  */
@@ -64,8 +199,10 @@ async function run(payload, jobId) {
       console.log(`[${jobId}] Orchestrator: Using model: ${PLANNING_MODEL} for planning`);
       const planResponse = await claude.messages.create({
         model: PLANNING_MODEL,
-        max_tokens: 8192,
-        system: `You are a master sales deck strategist and storyteller. Given a Sales Brain alignment payload, you design a deck that reads as a single, compelling narrative — not a disconnected sequence of slides.
+        max_tokens: 16384,
+        system: [{
+          type: 'text',
+          text: `You are a master sales deck strategist and storyteller. Given a Sales Brain alignment payload, you design a deck that reads as a single, compelling narrative — not a disconnected sequence of slides.
 
 IMPORTANT JSON RULES:
 - MUST wrap the JSON in \`\`\`json and \`\`\` fences.
@@ -187,6 +324,18 @@ Never go below 10 or above 16 regardless of payload richness.
 - Always use at least 3 section_header slides to break the deck into sections.
 - section_header slides do NOT count toward the "max 2 of same type" rule.
 
+## LAYOUT SELECTION — pick a "layout" field for each slide
+Valid layouts per slide_type (pick one, or omit for default):
+- cover/agenda/section_header/cta/pricing/client_wall/data: fixed (omit layout)
+- problem: "split_two_column" | "comparison_columns" | "bullets_with_icon"
+- solution: "split_two_column" | "cards_grid" | "bullets_with_icon" | "three_column"
+- services_grid/tech_stack: "cards_grid" | "bullets_with_icon"
+- comparison: "comparison_columns" | "split_two_column"
+- case_study: "case_study_layout" | "split_two_column"
+- engagement_models: "three_column" | "cards_grid"
+- team: "cards_grid" | "bullets_with_icon"
+Vary layouts — don't repeat the same layout 3+ slides in a row.
+
 ## THEME SELECTION — follow this decision tree in order, stop at first match
 
 STEP 0 — Check our_company identity first:
@@ -257,6 +406,7 @@ Schema:
   "slides": [
     {
       "slide_type": "cover|agenda|problem|solution|case_study|pricing|cta|section_header|services_grid|tech_stack|client_wall|engagement_models|comparison|data|team",
+      "layout": "one of the valid layouts listed in the LAYOUT SELECTION section above",
       "narrative_stage": "hook|their_world|turning_point|toolkit|proof|path_forward|call",
       "purpose": "One sentence: why is this slide in the deck AND how does it advance the story?",
       "content_brief": "VERY SHORT. Max 2 sentences. Include any required fields per slide type rules above.",
@@ -269,6 +419,8 @@ Schema:
   "theme_choice": "golden_navy|teal_trust|coral_energy|charcoal_minimal|ocean_gradient|sage_calm|quarks_brand",
   "total_slides": number
 }`,
+          cache_control: { type: 'ephemeral' }
+        }],
 
         messages: [
           {
@@ -313,7 +465,9 @@ Schema:
     } catch (e) {
       console.error(`[${jobId}] Orchestrator plan attempt ${attempts} failed: ${e.message}`);
       if (attempts >= 3) {
-        throw new Error(`failed to parse slide plan after 3 attempts — ${e.message}`);
+        console.error(`[${jobId}] All 3 orchestrator attempts failed. Generating fallback deck plan...`);
+        plan = buildFallbackPlan(payload, matchedCapabilities);
+        break;
       }
       // Wait before retrying to respect rate limits
       const retryDelay = 5000 * attempts;
