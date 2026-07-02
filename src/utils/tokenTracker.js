@@ -78,6 +78,26 @@ function getPhases() {
 }
 
 /**
+ * Get the current totals grouped by model.
+ * Aggregates across all phases so you can see which model consumed what.
+ *
+ * @returns {Object<string, PhaseTotals>}
+ */
+function getModels() {
+  const models = {};
+  for (const call of _callLog) {
+    const m = call.model || 'unknown';
+    if (!models[m]) {
+      models[m] = { calls: 0, inputTokens: 0, outputTokens: 0 };
+    }
+    models[m].calls += 1;
+    models[m].inputTokens += call.inputTokens;
+    models[m].outputTokens += call.outputTokens;
+  }
+  return models;
+}
+
+/**
  * Get the detailed per-call log.
  *
  * @returns {Array<Object>}
@@ -105,6 +125,7 @@ function getTotals() {
 
 /**
  * Generate a human-readable summary string suitable for console logging.
+ * Includes a per-phase breakdown and a per-model breakdown.
  *
  * @param {string} [jobId] - Optional job ID prefix
  * @returns {string} Multi-line summary
@@ -118,6 +139,7 @@ function getSummary(jobId) {
   lines.push(`${prefix}  📊 TOKEN USAGE SUMMARY`);
   lines.push(`${prefix}═══════════════════════════════════════════════════════════════`);
   lines.push(`${prefix}`);
+  lines.push(`${prefix}  ── By Phase ──────────────────────────────────────────────────`);
   lines.push(`${prefix}  Phase                          Calls   Input      Output     Total`);
   lines.push(`${prefix}  ─────────────────────────────────────────────────────────────`);
 
@@ -151,6 +173,26 @@ function getSummary(jobId) {
   const tOutput = String(totals.outputTokens).padStart(9);
   const tTotal = String(totals.total).padStart(9);
   lines.push(`${prefix}  ${'TOTAL'.padEnd(30)}  ${tCalls}   ${tInput}    ${tOutput}   ${tTotal}`);
+
+  // ── Per-model breakdown ──────────────────────────────────────────────────
+  const models = getModels();
+  lines.push(`${prefix}`);
+  lines.push(`${prefix}  ── By Model ──────────────────────────────────────────────────`);
+  lines.push(`${prefix}  Model                          Calls   Input      Output     Total`);
+  lines.push(`${prefix}  ─────────────────────────────────────────────────────────────`);
+
+  for (const model of Object.keys(models).sort()) {
+    const m = models[model];
+    const name = model.padEnd(30);
+    const calls = String(m.calls).padStart(5);
+    const input = String(m.inputTokens).padStart(9);
+    const output = String(m.outputTokens).padStart(9);
+    const total = String(m.inputTokens + m.outputTokens).padStart(9);
+    lines.push(`${prefix}  ${name}  ${calls}   ${input}    ${output}   ${total}`);
+  }
+
+  lines.push(`${prefix}  ─────────────────────────────────────────────────────────────`);
+  lines.push(`${prefix}  ${'TOTAL'.padEnd(30)}  ${tCalls}   ${tInput}    ${tOutput}   ${tTotal}`);
   lines.push(`${prefix}═══════════════════════════════════════════════════════════════`);
 
   return lines.join('\n');
@@ -167,6 +209,7 @@ function reset() {
 module.exports = {
   record,
   getPhases,
+  getModels,
   getCallLog,
   getTotals,
   getSummary,

@@ -21,7 +21,7 @@ const ReactDOMServer = require('react-dom/server');
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
-const { fitFontSize, fitMultiRunFontSize, fitBulletListFontSize, estimateTextHeight } = require('./utils/fontFit');
+const { fitFontSize, fitMultiRunFontSize, fitBulletListFontSize, estimateTextHeight, truncateText, truncateBullets } = require('./utils/fontFit');
 
 // Replaced react-icons with lightweight inline SVGs to prevent Node.js from hanging on startup
 const createIcon = (pathData) => ({ color = '#FFFFFF', size = 256 }) => React.createElement(
@@ -417,7 +417,7 @@ async function renderCover(slide, spec, pres) {
   const coverTitle = spec.title || 'Untitled Deck';
   const coverTitleFont = fonts(spec).title;
   const coverTitleSize = fitFontSize(coverTitle, 7.0, 1.8, {
-    fontName: coverTitleFont, minSize: 18, maxSize: 40, fillRatio: 0.85
+    fontName: coverTitleFont, minSize: 18, maxSize: 40, fillRatio: 0.80
   });
   slide.addText(coverTitle, {
     x: 0.5, y: 1.0, w: 7.0, h: 1.8,
@@ -425,7 +425,8 @@ async function renderCover(slide, spec, pres) {
     fontFace: coverTitleFont,           // Calibri for quarks, Cambria for others
     bold: true,
     color: t.title_dark,
-    align: 'left', valign: 'top', margin: 0
+    align: 'left', valign: 'top', margin: 0,
+    fit: 'shrink'
   });
 
   const isQuarks = t === COLOR_THEMES.quarks_brand;
@@ -454,9 +455,9 @@ async function renderCover(slide, spec, pres) {
   const stats = spec.stats_strip || [];
   if (stats.length >= 2) {
     const stripY = 3.4;
-    // Semi-transparent strip background
+    // Semi-transparent strip background — taller to fit labels at 10pt
     slide.addShape(pres.shapes.RECTANGLE, {
-      x: 0.5, y: stripY, w: 8.0, h: 0.85,
+      x: 0.5, y: stripY, w: 8.0, h: 0.95,
       fill: { color: t.accent, transparency: 85 },
       line: { color: t.accent, width: 0 }
     });
@@ -468,12 +469,16 @@ async function renderCover(slide, spec, pres) {
       slide.addText(stat.number || stat.value || '', {
         x, y: stripY - 0.02, w: colW, h: 0.52,
         fontSize: 26, fontFace: 'Cambria', bold: true,
-        color: t.accent, align: 'center', valign: 'bottom', margin: 0
+        color: t.accent, align: 'center', valign: 'bottom', margin: 0,
+        fit: 'shrink'
       });
-      // Label below
+      // Label below — 10pt minimum, taller box to prevent overflow
+      const labelSize = fitFontSize(stat.label || '', colW - 0.1, 0.35, {
+        fontName: 'Calibri', minSize: 10, maxSize: 11, fillRatio: 0.90
+      });
       slide.addText(stat.label || '', {
-        x, y: stripY + 0.5, w: colW, h: 0.3,
-        fontSize: 9, fontFace: 'Calibri',
+        x, y: stripY + 0.5, w: colW, h: 0.35,
+        fontSize: labelSize, fontFace: 'Calibri',
         color: t.body_dark, align: 'center', valign: 'top', margin: 0,
         fit: 'shrink'
       });
@@ -507,6 +512,8 @@ async function renderSectionHeader(slide, spec, pres) {
   slide.background = { color: t.dark_bg };
 
   // ── Ghost section number — background decoration ─────────────────
+  // Use a shape name prefix so structural review can identify it as decorative
+  // and skip overlap checks. The text is purely visual — 85% transparent.
   slide.addText(`0${spec.slide_number}`, {
     x: isQuarks ? 4.5 : 5.5,
     y: 0.1,
@@ -517,7 +524,8 @@ async function renderSectionHeader(slide, spec, pres) {
     bold: true,
     color: t.primary,
     transparency: 85,
-    align: 'right', valign: 'middle', margin: 0
+    align: 'right', valign: 'middle', margin: 0,
+    objectName: 'ghost_section_number'
   });
 
   // ── Vertical accent line ─────────────────────────────────────────
@@ -569,7 +577,8 @@ async function renderSectionHeader(slide, spec, pres) {
       bold: true,
       charSpacing: isQuarks ? 2 : 0,   // spec: charSpacing on dark bg
       color: t.title_dark,
-      align: 'left', valign: 'top', margin: 0
+      align: 'left', valign: 'top', margin: 0,
+      fit: 'shrink'
     }
   );
 
@@ -588,7 +597,8 @@ async function renderSectionHeader(slide, spec, pres) {
       fontSize: sectionSubSize,
       fontFace: sectionSubFont,       // Calibri Light for quarks
       color: t.body_dark,
-      align: 'left', italic: true, margin: 0
+      align: 'left', italic: true, margin: 0,
+      fit: 'shrink'
     });
   }
 
@@ -741,7 +751,8 @@ async function renderSplitTwoCol(slide, spec, pres) {
   const cardH = 3.0;
 
   // Left: bullets with accent-bar card
-  const bullets = (spec.bullets || []).slice(0, 4);
+  // Safety net: truncate excessively long bullets to prevent overflow
+  const bullets = truncateBullets((spec.bullets || []).slice(0, 4), 120);
   if (bullets.length) {
     slide.addShape(pres.shapes.RECTANGLE, {
       x: leftX, y: cardY, w: colW, h: cardH,
@@ -820,11 +831,12 @@ async function renderSplitTwoCol(slide, spec, pres) {
       fill: { color: t.accent },
       line: { color: t.accent, width: 0 }
     });
-    // Dynamic subtitle font size
-    const stcSubSize = fitFontSize(spec.subtitle, colW - 0.4, cardH - 0.5, {
+    // Dynamic subtitle font size — truncate as safety net
+    const stcSubText = truncateText(spec.subtitle, 200);
+    const stcSubSize = fitFontSize(stcSubText, colW - 0.4, cardH - 0.5, {
       fontName: 'Calibri', minSize: 10, maxSize: 15, fillRatio: 0.88
     });
-    slide.addText(spec.subtitle, {
+    slide.addText(stcSubText, {
       x: rightX + 0.2, y: cardY + 0.25, w: colW - 0.4, h: cardH - 0.5,
       fontSize: stcSubSize, fontFace: 'Calibri', italic: true,
       color: t.body_light, valign: 'middle', margin: 0,
@@ -856,9 +868,11 @@ async function renderComparison(slide, spec, pres) {
     valign: 'top', fit: 'shrink'
   });
 
-  const half = Math.ceil((spec.bullets || []).length / 2);
-  const left = (spec.bullets || []).slice(0, half);
-  const right = (spec.bullets || []).slice(half);
+  // Safety net: truncate excessively long bullets to prevent overflow
+  const cmpBullets = truncateBullets(spec.bullets || [], 100);
+  const half = Math.ceil(cmpBullets.length / 2);
+  const left = cmpBullets.slice(0, half);
+  const right = cmpBullets.slice(half);
 
   // Dynamic two-column layout — scales with slideW
   const slideW = spec.slideW || 13.33;
@@ -1005,12 +1019,13 @@ async function renderDataChart(slide, spec, pres) {
     });
   } else if (spec.bullets && spec.bullets.length) {
     const dcBulletW = (spec.slideW || 13.33) - 1.0;
-    const dcBulletSize = fitBulletListFontSize(spec.bullets, dcBulletW, 2.9, {
+    const dcBullets = truncateBullets(spec.bullets, 100);
+    const dcBulletSize = fitBulletListFontSize(dcBullets, dcBulletW, 2.9, {
       fontName: 'Calibri', minSize: 10, maxSize: 16, fillRatio: 0.90, paraSpaceAfter: 10
     });
     slide.addText(
-      spec.bullets.map((b, i) => ({
-        text: b, options: { bullet: true, breakLine: i < spec.bullets.length - 1, paraSpaceAfter: 10 }
+      dcBullets.map((b, i) => ({
+        text: b, options: { bullet: true, breakLine: i < dcBullets.length - 1, paraSpaceAfter: 10 }
       })),
       { x: 0.5, y: 1.8, w: dcBulletW, h: 2.9, fontSize: dcBulletSize, fontFace: 'Calibri', color: t.body_light, fit: 'shrink' }
     );
@@ -1054,7 +1069,8 @@ async function renderCaseStudy(slide, spec, pres) {
   });
 
   // Dynamic quote font size — fit full subtitle text in the quote card
-  const csQuoteText = `"${spec.subtitle || 'Client outcome'}"`;
+  // Safety net: truncate excessively long quotes to prevent overflow
+  const csQuoteText = `"${truncateText(spec.subtitle || 'Client outcome', 180)}"`;
   const csQuoteSize = fitFontSize(csQuoteText, totalW - 0.5, 1.15, {
     fontName: 'Cambria', minSize: 10, maxSize: 15, fillRatio: 0.88
   });
@@ -1067,7 +1083,8 @@ async function renderCaseStudy(slide, spec, pres) {
   });
 
   // Results grid — 2x2 stat callout cards
-  const bullets = (spec.bullets || []).slice(0, 4);
+  // Safety net: truncate excessively long result text to prevent overflow
+  const bullets = truncateBullets((spec.bullets || []).slice(0, 4), 80);
   const gapX = 0.4;
   const cardW = (totalW - gapX) / 2;
   const positions = [
@@ -1153,7 +1170,8 @@ async function renderCTA(slide, spec, pres) {
     fit: 'shrink'
   });
   // Line 2 — cyan subtitle — dynamic font size to fit full subtitle
-  const ctaSubtitle = spec.subtitle || 'Your roadmap starts here';
+  // Safety net: truncate excessively long subtitles
+  const ctaSubtitle = truncateText(spec.subtitle || 'Your roadmap starts here', 150);
   const ctaSubFont = fonts(spec).title;
   // Calculate how much vertical space the subtitle needs based on content length
   const subtitleLen = ctaSubtitle.length;
@@ -1465,7 +1483,8 @@ async function renderCardsGrid(slide, spec, pres) {
     });
   }
 
-  const bullets = (spec.bullets || []).slice(0, 12);
+  // Safety net: truncate card text to prevent overflow in small cards
+  const bullets = truncateBullets((spec.bullets || []).slice(0, 12), 60);
   const count = bullets.length;
   const startY = spec.subtitle ? 1.75 : 1.55;  // pushed down to clear title+subtitle
 
@@ -1686,6 +1705,13 @@ async function renderThreeColumn(slide, spec, pres) {
   // Safety net — always pad to 3 columns so slide never breaks
   while (columns.length < 3) {
     columns.push({ header: `Model ${columns.length + 1}`, items: ['Details coming soon'] });
+  }
+
+  // Safety net: truncate column items to prevent overflow in narrow columns
+  for (const col of columns) {
+    if (col.items) {
+      col.items = col.items.map(item => truncateText(item, 50));
+    }
   }
 
   const startY = spec.subtitle ? 1.95 : 1.55;

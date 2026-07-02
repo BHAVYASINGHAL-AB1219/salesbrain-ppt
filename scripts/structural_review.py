@@ -261,6 +261,10 @@ def check_font_size(shape):
     """Check font sizes for readability."""
     issues = []
 
+    # Skip decorative ghost numbers (160pt+ transparent background text)
+    if is_decorative_shape(shape):
+        return issues
+
     font_min = shape.get("font_size_min")
     font_max = shape.get("font_size_max")
 
@@ -336,6 +340,10 @@ def check_text_overflow(shape):
     This is the KEY improvement over v1 — we now predict actual line count.
     """
     issues = []
+
+    # Skip decorative ghost numbers
+    if is_decorative_shape(shape):
+        return issues
 
     if not shape.get("has_text_frame") or shape.get("text_length", 0) == 0:
         return issues
@@ -434,11 +442,28 @@ def check_horizontal_overflow(shape):
     return issues
 
 
+def is_decorative_shape(shape):
+    """Check if a shape is purely decorative and should be skipped in overlap/overflow checks.
+    Decorative shapes include ghost section numbers (85% transparent, 160pt+) and
+    shapes with 'ghost' in their name.
+    """
+    name = (shape.get("name") or "").lower()
+    if "ghost" in name:
+        return True
+    # Also detect by extreme font size + high transparency (ghost section numbers)
+    font_max = shape.get("font_size_max") or 0
+    if font_max and font_max >= 100:
+        return True
+    return False
+
+
 def check_overlaps(shapes):
     """Check for overlapping text-bearing shapes."""
     issues = []
 
     text_shapes = [s for s in shapes if s.get("has_text_frame") and s.get("text_length", 0) > 0]
+    # Filter out decorative shapes (ghost numbers, etc.) from overlap checks
+    text_shapes = [s for s in text_shapes if not is_decorative_shape(s)]
 
     for i in range(len(text_shapes)):
         for j in range(i + 1, len(text_shapes)):

@@ -14,6 +14,9 @@ const claude = new Anthropic({
 });
 
 const CONTENT_MODEL = process.env.CONTENT_MODEL || 'kimi-k2p6';
+// Planning is a structured task (deck structure + JSON) — can use a cheaper
+// open-source model via NVIDIA. Falls back to CONTENT_MODEL if unset.
+const PLANNING_MODEL = process.env.PLANNING_MODEL || CONTENT_MODEL;
 
 /**
  * Builds narrative context for a single slide so the content agent can write
@@ -58,9 +61,9 @@ async function run(payload, jobId) {
   while (attempts < 3) {
     attempts++;
     try {
-      console.log(`[${jobId}] Orchestrator: Using model: ${CONTENT_MODEL} for planning`);
+      console.log(`[${jobId}] Orchestrator: Using model: ${PLANNING_MODEL} for planning`);
       const planResponse = await claude.messages.create({
-        model: CONTENT_MODEL,
+        model: PLANNING_MODEL,
         max_tokens: 8192,
         system: `You are a master sales deck strategist and storyteller. Given a Sales Brain alignment payload, you design a deck that reads as a single, compelling narrative — not a disconnected sequence of slides.
 
@@ -73,58 +76,84 @@ IMPORTANT JSON RULES:
 
 ## THE SALES STORY ARC — mandatory for ALL deck goals
 
-Every deck follows this 7-stage narrative arc. The arc is universal — it works for
-discovery calls, follow-ups, proposals, and demos. The deck_goal only changes the
-EMPHASIS and slide count per stage, not the arc itself.
+Every deck follows this 7-stage narrative arc, inspired by a proven strategic
+partnership proposal format. The arc is universal — it works for discovery calls,
+follow-ups, proposals, and demos. The deck_goal only changes the EMPHASIS and
+slide count per stage, not the arc itself.
 
 Think of the deck as a story with a hero (the client), a villain (their pain),
 a guide (us), and a happy ending (the outcome).
 
 ### STAGE 1 — THE HOOK (Opening) — always 2 slides
 The deck opens by making the client the hero of their own story.
-- cover        → 1 slide, dark. Title is about the CLIENT's aspiration, not our company.
-                 Example: "Transforming [Client]'s [process] for [outcome]"
-- agenda       → 1 slide, light. A roadmap framed as a journey, not a table of contents.
-                 Use action verbs: "Where you are → What's holding you back → How we help → Proof → Next steps"
+- cover        → 1 slide, dark. Title frames a PARTNERSHIP, not just a pitch.
+                 Use the format: "[Our Company] × [Client] | [Partnership Theme]"
+                 Subtitle: one line on the outcome you'll accelerate together.
+                 Example: "Quarks × Autodesk | Strategic Partnership Proposal"
+- agenda       → 1 slide, light. Frame as an EXECUTIVE SUMMARY, not a table of contents.
+                 Lead with alignment: show the client's top practice areas and fit scores
+                 as a stats_strip (e.g. "85 AI/ML Fit", "80 Cloud & DevOps", "78 QE").
+                 This makes the deck feel data-driven from slide 2, not generic.
+                 Use action verbs: "Where you are → What's changing → How we fit → Proof → Next steps"
 
-### STAGE 2 — THEIR WORLD (Context) — 1-2 slides
-Show you understand their world before you talk about yours. Empathy first.
-- section_header → 1 dark slide opening this section. Title must be client-specific:
-  "Why [industry] Teams Like [client] Struggle With [pain_point]"
-- problem      → 1 slide. Frame pain points as the villain. Use the client's own language.
+### STAGE 2 — WHY NOW (Urgency) — 1-2 slides
+Show you understand their world AND why this conversation can't wait. Urgency first.
+- section_header → 1 dark slide. Title must be client-specific and urgency-driven:
+  "Why [Client]'s [industry] Investment Signals Urgency" or
+  "Why Now: [Client]'s Strategic [topic] Moment"
+- problem      → 1 slide. Frame the client's strategic signals and pain points as
+  the reason to act NOW. Use the client's own language and real numbers.
+  Include market signals: investments, product launches, hiring trends, regulatory shifts.
   Requires stat_callout with a real number from the payload.
 - data         → ADD 1 slide ONLY IF alignment_score < 70 (pain needs more evidence)
   OR payload has chart_data. has_chart: true.
 
-### STAGE 3 — THE TURNING POINT (Insight) — 1-2 slides
-This is the "aha" moment — the insight that reframes their problem.
-- section_header → 1 dark slide. Title: "A New Way Forward for [client]"
-- solution     → 1 slide. Our approach as the guide's wisdom. Requires stat_callout.
-  Frame as "Here's the shift that changes everything for [client]"
+### STAGE 3 — THE FIT (Alignment Deep-Dive) — 2-4 slides
+This is the core of the deck — show HOW and WHY we fit, ranked by alignment strength.
+Lead with the strongest fit area and descend. Each slide is a practice-area deep-dive.
+- section_header → 1 dark slide. Title: "Strong Fit · Score: [highest] | [Practice Area Name]"
+  or "Where We Align Strongest with [Client]"
+- solution     → 1-3 slides. Each slide covers ONE practice area / capability cluster,
+  ranked by fit score (highest first). Frame as:
+  "Quarks' [practice area] can directly accelerate [Client]'s [strategic initiative]"
+  Include 3 sub-capabilities per slide as bullets.
+  Requires stat_callout. Use the MATCHED CAPABILITIES provided — strongest first.
+- services_grid → Use for the FIRST fit deep-dive if there are 6+ matched capabilities.
+  Otherwise use solution slides for each practice area.
 
-### STAGE 4 — THE GUIDE'S TOOLKIT (Capabilities) — 1-3 slides
-Now we show what we bring. This is where we earn the right to be trusted.
-- services_grid → 1 slide. ONLY use the MATCHED CAPABILITIES provided. Max 6.
+### STAGE 4 — THE GUIDE'S TOOLKIT (Capabilities) — 0-2 slides
+Now we show the broader toolkit. This is where we earn the right to be trusted.
+- services_grid → ADD 1 slide ONLY IF there are capabilities not covered in Stage 3.
+  ONLY use the MATCHED CAPABILITIES provided. Max 6.
   Format: "Capability Title: one-line client benefit [signal]"
 - comparison   → ADD 1 slide ONLY IF recommended_angle mentions "vs", "replace",
   "switch", "migration", "currently using", "alternative"
 - tech_stack   → ADD 1 slide ONLY IF our_company.products has 4+ technology items
 
-### STAGE 5 — THE PROOF (Evidence) — 1-2 slides
-Stories need proof. Show that the happy ending is real and repeatable.
-- section_header → 1 dark slide. Title: "Proof That This Works"
+### STAGE 5 — THE PROOF (Evidence + Parallels) — 2-3 slides
+Stories need proof. Show that the happy ending is real, repeatable, AND parallels
+the client's specific challenges.
+- section_header → 1 dark slide. Title: "Proof of Capability" or "The [Case Study Client] Benchmark"
 - case_study   → 1 slide. Requires client name, outcome metric, and a quote.
-- data         → ADD 1 slide ONLY IF case_studies has more than 1 entry.
+  Frame as a BENCHMARK: "Quarks delivered [outcome] for [case client] — the results
+  speak directly to [Client]'s [need]."
+- solution     → ADD 1 "Why Us / Parallels" slide. Title: "Why [Our Company] | Parallels
+  That Prove the Fit". Connect the case study back to the client's specific challenges:
+  "Complex Platform Experience → mirrors [Client]'s [challenge]",
+  "Cloud & Kubernetes at Scale → directly parallels [Client]'s [roadmap]".
+  This bridge slide is critical — it makes the proof feel relevant, not generic.
 
 ### STAGE 6 — THE PATH FORWARD (How We Work) — 1-2 slides
 Make the next step feel easy and low-risk.
 - engagement_models → 1 slide. Exactly 3 models. Frame as "Choose your starting point"
+  or as a numbered 3-step path: "01 Discovery Workshop → 02 Capability Deep-Dive → 03 Pilot Engagement"
 - pricing      → ADD 1 slide ONLY IF budget_range exists AND deck_goal is "proposal"
 
-### STAGE 7 — THE CALL (Close) — always 2 slides
+### STAGE 7 — THE CALL (Close) — always 1-2 slides
 End with momentum. The client should feel inspired to act.
-- section_header → 1 dark slide. Title: "Where We Go From Here"
+- section_header → ADD 1 dark slide ONLY IF deck has room. Title: "Next Steps | Let's Build Together"
 - cta           → 1 slide, dark. One clear, specific action.
+  Reference the urgency from Stage 2: "Ready to accelerate [Client]'s [initiative]? Let's start with a discovery workshop."
 
 ## DECK GOAL EMPHASIS — adjust slide count per stage, NOT the arc
 
@@ -256,7 +285,7 @@ Schema:
         ]
       });
 
-      tokenTracker.record('planning', CONTENT_MODEL, planResponse.usage, 'deck plan');
+      tokenTracker.record('planning', PLANNING_MODEL, planResponse.usage, 'deck plan');
       plan = parseLLMResponse(planResponse);
 
       // Validate slide count is within bounds

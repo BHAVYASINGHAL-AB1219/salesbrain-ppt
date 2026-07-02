@@ -8,6 +8,9 @@ const claude = new Anthropic({
 });
 
 const CONTENT_MODEL = process.env.CONTENT_MODEL || 'kimi-k2p6';
+// Extraction is a structured task (text → fixed JSON schema) — can use a
+// cheaper open-source model via NVIDIA. Falls back to CONTENT_MODEL if unset.
+const EXTRACTOR_MODEL = process.env.EXTRACTOR_MODEL || CONTENT_MODEL;
 
 async function extract(text) {
   const systemPrompt = `You are an expert data extractor. Given an unstructured text document (e.g. an alignment strategy, article, or briefing), extract the relevant information into a specific JSON structure.
@@ -30,9 +33,9 @@ Schema:
   "deck_goal": "proposal"
 }`;
 
-  console.log(`[Extractor] Using model: ${CONTENT_MODEL}`);
+  console.log(`[Extractor] Using model: ${EXTRACTOR_MODEL}`);
   const response = await claude.messages.create({
-    model: CONTENT_MODEL,
+    model: EXTRACTOR_MODEL,
     max_tokens: 8192,
     system: systemPrompt,
     messages: [
@@ -43,7 +46,7 @@ Schema:
     ]
   });
 
-  tokenTracker.record('extraction', CONTENT_MODEL, response.usage, 'payload extraction');
+  tokenTracker.record('extraction', EXTRACTOR_MODEL, response.usage, 'payload extraction');
   console.log("LLM RESPONSE:", JSON.stringify(response, null, 2));
 
   try {

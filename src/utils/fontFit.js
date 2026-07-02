@@ -289,6 +289,37 @@ function fitBulletListFontSize(bullets, boxWidthInches, boxHeightInches, opts = 
   return Math.round(best * 2) / 2;
 }
 
+/**
+ * Truncate text to fit within a character budget, adding ellipsis.
+ * Used as a last-resort safety net when font fitting alone can't prevent overflow
+ * (e.g., when the LLM generates excessively long text despite prompt limits).
+ *
+ * @param {string} text - Text to truncate
+ * @param {number} maxChars - Maximum characters allowed
+ * @returns {string} Truncated text with "…" if cut
+ */
+function truncateText(text, maxChars) {
+  if (!text || text.length <= maxChars) return text;
+  // Try to cut at a word boundary near the limit
+  const cut = text.slice(0, maxChars - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  if (lastSpace > maxChars * 0.7) {
+    return cut.slice(0, lastSpace) + '…';
+  }
+  return cut + '…';
+}
+
+/**
+ * Truncate an array of bullet strings so each fits within maxCharsPerBullet.
+ * @param {string[]} bullets - Array of bullet text
+ * @param {number} maxCharsPerBullet - Max chars per bullet
+ * @returns {string[]} Truncated bullets
+ */
+function truncateBullets(bullets, maxCharsPerBullet) {
+  if (!bullets || !bullets.length) return bullets;
+  return bullets.map(b => truncateText(b, maxCharsPerBullet));
+}
+
 module.exports = {
   FONT_AVG_CHAR_WIDTH_RATIO,
   LINE_HEIGHT_RATIO,
@@ -301,4 +332,6 @@ module.exports = {
   fitFontSize,
   fitMultiRunFontSize,
   fitBulletListFontSize,
+  truncateText,
+  truncateBullets,
 };

@@ -79,21 +79,16 @@ IMPORTANT JSON RULES:
 - Do NOT use unescaped newlines inside string values. Keep text on a single line.
 - Ensure the JSON is strictly valid.
 
+OUTPUT-SAVING RULE (CRITICAL):
+- For each PASSING slide, output ONLY {"slide_index": N, "pass": true}. Do NOT include slide_type, sub-scores, issues, or feedback for passing slides.
+- For each FAILING slide, output the full object with all four sub-scores, average_score, pass:false, issues[], and a specific feedback string.
+- Most slides pass — do not waste tokens describing them. Keep the response as short as possible.
+
 Schema:
 {
   "reviews": [
-    {
-      "slide_index": 0,
-      "slide_type": "cover",
-      "relevance": 8,
-      "specificity": 7,
-      "clarity": 9,
-      "completeness": 8,
-      "average_score": 8.0,
-      "pass": true,
-      "issues": [],
-      "feedback": null
-    },
+    {"slide_index": 0, "pass": true},
+    {"slide_index": 1, "pass": true},
     {
       "slide_index": 2,
       "slide_type": "problem",
@@ -108,7 +103,7 @@ Schema:
     }
   ],
   "overall_score": 7.2,
-  "passed_count": 8,
+  "passed_count": 10,
   "failed_count": 2,
   "deck_narrative_feedback": "Overall narrative is good but the transition from problem to solution is abrupt."
 }`,
@@ -138,12 +133,22 @@ Review each slide. Be strict about fabricated statistics and generic text that d
   try {
     const reviewResult = parseLLMResponse(response);
 
-    // Ensure pass/fail is correctly computed based on threshold
+    // Ensure pass/fail is correctly computed based on threshold.
+    // Passing slides may be returned as minimal {slide_index, pass:true}
+    // objects (see OUTPUT-SAVING RULE in the prompt) to save output tokens.
+    // Trust the explicit pass flag for those and default the score; only
+    // recompute from sub-scores for full failing objects.
     if (reviewResult.reviews) {
       let passedCount = 0;
       let totalScore = 0;
 
       reviewResult.reviews = reviewResult.reviews.map(r => {
+        if (r.pass === true && r.average_score == null) {
+          const avg = PASS_THRESHOLD;
+          passedCount++;
+          totalScore += avg;
+          return { ...r, average_score: avg, pass: true };
+        }
         const avg = r.average_score || ((r.relevance + r.specificity + r.clarity + r.completeness) / 4);
         const pass = avg >= PASS_THRESHOLD;
         if (pass) passedCount++;

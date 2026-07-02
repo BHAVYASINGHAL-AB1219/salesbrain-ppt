@@ -43,28 +43,29 @@ IMPORTANT JSON RULES:
 - Bullets should read like a narrative argument, not a feature list. Each bullet should build on the previous.
 - speaker_notes should sound like a presenter telling a story, not reading a spec sheet.
 
-## CONTENT RULES
-- For services_grid bullets, append the signal in brackets after each item:
-  "Agentic AI in Service Operations: Autonomous ticket resolution [Hot in 2026]"
-  This shows the client Quarks is tracking current signals, not selling old solutions.
-- title: max 8 words, punchy and specific to the client
-- subtitle: optional, 1-2 sentences — use it to bridge or add context. Can be longer if needed.
-- bullets: max 4-6 items depending on slide type
-  - For services_grid/tech_stack: up to 9-12 items, format "Title: description"
-    Keep descriptions concise but COMPLETE — do not truncate with "...".
-    The rendering engine will auto-size fonts to fit all text.
-  - For client_wall: up to 15-20 client/company names as simple strings
-  - For engagement_models: exactly 3 bullets, one per column, format "Model Name: point1 | point2 | point3"
-  Example: "Fixed Scope Projects: Predictable cost and timeline | Defined deliverables upfront | Best for clear-scope work"
-  Example: "Managed Services: 24/7 monitoring and support | Proactive issue resolution | Scales with your demand"
-  Example: "Staff Augmentation: On-demand specialist talent | No recruitment overhead | Ramp up or down instantly"
-  - For regular slides: max 4-6 items. Write COMPLETE sentences — do not truncate.
-    The rendering engine dynamically calculates font size to fit all content.
-    NEVER use "..." to truncate text. Write the full message.
-- speaker_notes: 2-3 sentences for the presenter, conversational, referencing the story flow
+## CONTENT RULES — CHARACTER BUDGETS (CRITICAL)
+Text boxes have fixed sizes. If you exceed these limits, text WILL overflow and look broken.
+STAY WITHIN THESE LIMITS. Be concise. Every word must earn its place.
+
+- title: max 60 characters (8 words max), punchy and specific to the client
+- subtitle: max 120 characters — one sentence to bridge or add context
+- bullets (regular slides): max 4-5 items, EACH max 100 characters
+  Write punchy, impactful phrases — NOT full sentences. Think billboard, not paragraph.
+  BAD: "Legacy data warehouse bottlenecks are forcing Genpact to wait 3-4 days for critical reports, turning urgent decisions into bottlenecks"
+  GOOD: "3-4 day report delays from legacy warehouse bottlenecks"
+- bullets (services_grid/tech_stack): up to 6-9 items, format "Title: description"
+  Title max 25 chars, description max 35 chars. Total per item max 60 characters.
+  Append signal in brackets: "Agentic AI: Autonomous resolution [Hot in 2026]"
+- bullets (client_wall): up to 15-20 client/company names as simple strings, max 25 chars each
+- bullets (engagement_models): exactly 3 bullets, format "Model Name: point1 | point2 | point3"
+  Each point max 30 chars. Total per bullet max 110 characters.
+- bullets (case_study): max 4 items, EACH max 80 characters — specific measurable results
+- speaker_notes: max 180 characters, 2-3 sentences, conversational
 - stat_callout: only if there's a real number in the payload (null otherwise)
+  number: max 15 chars, label: max 60 chars
 - chart_data: only if has_chart is true (null otherwise)
 - stats_strip: ONLY for cover slide — array of 3-4 objects [{number: "17+", label: "Years"}, ...]
+  number: max 10 chars, label: max 25 chars
   Pull real numbers from the payload (years of experience, client count, team size, etc.)`,
     messages: [
       {
